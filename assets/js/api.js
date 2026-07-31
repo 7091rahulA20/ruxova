@@ -3,7 +3,7 @@
    Central fetch wrapper with JWT auth + base URL
    ================================================================ */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://ruxovabackend.onrender.com/api';
 
 /**
  * Get stored auth token
