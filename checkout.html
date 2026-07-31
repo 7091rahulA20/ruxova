@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — RUXOVA PERFUMES</title>
+  <meta name="description" content="Secure checkout for your RUXOVA order.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- QRCode Library for UPI -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @media(max-width:768px){
+      #checkout-layout { grid-template-columns:1fr !important; }
+      #order-summary-panel { position:static !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-loader" id="page-loader">
+  <p class="loader-logo gold-text">RUXOVA</p>
+  <div class="loader-ring"></div>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo gold-text">RUXOVA</a>
+  <ul class="navbar-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li id="nav-auth-links" style="display:contents;"></li>
+  </ul>
+  <div class="navbar-actions">
+    <a href="cart.html" class="cart-icon"><span>🛒</span><span class="cart-badge cart-count" style="display:none;">0</span></a>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a><a href="shop.html">Shop</a>
+  <a href="cart.html">Cart</a><a href="orders.html">My Orders</a>
+  <a href="login.html" class="btn btn-gold" style="margin-top:16px;text-align:center;">Login</a>
+</div>
+
+<main id="checkout-main" style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+  <h1 class="section-title" style="margin-bottom:32px;">Secure <span class="gold-text">Checkout</span></h1>
+
+  <form id="checkout-form">
+    <div id="checkout-layout" style="display:grid;grid-template-columns:1fr 400px;gap:40px;align-items:start;">
+
+      <!-- Left Column: Form -->
+      <div>
+        <!-- Shipping Address -->
+        <div class="card" style="padding:28px;margin-bottom:24px;">
+          <h2 style="font-family:var(--font-serif);font-size:20px;font-weight:700;margin-bottom:24px;">Shipping Address</h2>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="field-name" class="form-control" required placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email *</label>
+              <input type="email" id="field-email" class="form-control" required placeholder="name@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone *</label>
+              <input
+                type="tel"
+                id="field-phone"
+                class="form-control"
+                required
+                pattern="[6-9][0-9]{9}"
+                maxlength="10"
+                minlength="10"
+                placeholder="10-digit mobile number"
+                title="Enter a valid 10-digit Indian mobile number">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Flat, House No., Building, Street *</label>
+              <input type="text" id="field-address" class="form-control" required placeholder="Street address or locality">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Landmark (Optional)</label>
+              <input type="text" id="field-landmark" class="form-control" placeholder="E.g. Near City Mall, Opp. Water Tank">
+            </div>
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <input type="text" id="field-city" class="form-control" required placeholder="City">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State *</label>
+              <input type="text" id="field-state" class="form-control" required placeholder="State">
+            </div>
+            <div class="form-group">
+              <label class="form-label">PIN Code *</label>
+              <input
+                type="text"
+                id="field-pincode"
+                class="form-control"
+                required
+                pattern="[0-9]{6}"
+                maxlength="6"
+                placeholder="6-digit PIN"
+                title="Enter a valid 6-digit PIN code">
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="card" style="padding:28px;">
+          <h2 style="font-family:var(--font-serif);font-size:20px;font-weight:700;margin-bottom:24px;">Payment Method</h2>
+
+          <!-- COD -->
+          <label style="display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--black-border);border-radius:var(--radius);margin-bottom:16px;cursor:pointer;transition:border-color 0.2s;">
+            <input type="radio" name="payment" value="COD" id="pay-cod" required style="width:18px;height:18px;accent-color:var(--gold);">
+            <div>
+              <p style="font-weight:600;font-size:16px;">Cash on Delivery (COD)</p>
+              <p style="color:var(--text-muted);font-size:13px;">Pay in cash when your order arrives.</p>
+            </div>
+          </label>
+
+          <!-- UPI -->
+          <label style="display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--black-border);border-radius:var(--radius);cursor:pointer;transition:border-color 0.2s;">
+            <input type="radio" name="payment" value="UPI" id="pay-upi" required style="width:18px;height:18px;accent-color:var(--gold);">
+            <div>
+              <p style="font-weight:600;font-size:16px;">UPI / QR Code</p>
+              <p style="color:var(--text-muted);font-size:13px;">GPay, PhonePe, Paytm, BHIM (Upload Screenshot)</p>
+            </div>
+          </label>
+
+          <!-- UPI Details Panel -->
+          <div id="upi-panel" style="display:none;margin-top:20px;background:var(--black-soft);border:1px solid var(--gold);border-radius:var(--radius);padding:24px;">
+            <h3 style="font-family:var(--font-serif);font-size:18px;color:var(--gold);margin-bottom:16px;text-align:center;">Scan & Pay via UPI</h3>
+            
+            <div id="qr-container" style="display:flex;justify-content:center;margin-bottom:20px;background:white;padding:16px;border-radius:12px;width:max-content;margin:0 auto 20px;"></div>
+
+            <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:8px;padding:16px;margin-bottom:20px;text-align:center;">
+              <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">UPI ID</p>
+              <p style="font-weight:700;color:var(--gold);font-size:16px;margin-bottom:12px;" id="display-upi-id">ruxova@upi</p>
+              
+              <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" id="copy-upi-btn" class="btn btn-outline" style="padding:6px 14px;font-size:12px;">📋 Copy UPI ID</button>
+                <a id="open-upi-app-btn" href="#" class="btn btn-gold" style="padding:6px 14px;font-size:12px;text-decoration:none;">📱 Open in UPI App</a>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="color:var(--text-primary);">Upload Payment Screenshot <span style="color:var(--error);">*</span></label>
+              <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Upload proof of payment after completing transaction.</p>
+              <input type="file" id="screenshot-input" accept="image/*" class="form-control" style="background:var(--black-card);">
+              <div id="screenshot-preview-container" style="display:none;margin-top:12px;text-align:center;">
+                <img id="screenshot-preview" src="" alt="Screenshot Preview" style="max-height:160px;border-radius:8px;border:1px solid var(--gold);margin:0 auto;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Summary -->
+      <div id="order-summary-panel" style="position:sticky;top:90px;">
+        <div class="card" style="padding:28px;">
+          <h2 style="font-family:var(--font-serif);font-size:20px;font-weight:700;margin-bottom:24px;">Order Summary</h2>
+          <div id="order-summary"></div>
+
+          <!-- Coupon / Referral Code Box -->
+          <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--black-border);">
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);">Coupon / Referral Code</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="coupon-input" class="form-control" placeholder="Enter Code (e.g. ALEX10)" style="text-transform:uppercase;font-size:13px;padding:8px 12px;">
+              <button type="button" id="apply-coupon-btn" class="btn btn-outline" style="padding:8px 16px;font-size:13px;white-space:nowrap;">Apply</button>
+            </div>
+            <div id="coupon-message" style="margin-top:8px;font-size:12px;display:none;"></div>
+          </div>
+
+          <button type="submit" id="place-order-btn" class="btn btn-gold btn-lg" style="width:100%;margin-top:24px;">Place Order</button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</main>
+
+<footer style="background:var(--black-soft);border-top:1px solid var(--black-border);padding:32px 24px;text-align:center;margin-top:80px;">
+  <p class="gold-text" style="font-family:var(--font-serif);font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:8px;">RUXOVA</p>
+  <div class="social-links-wrap" style="justify-content:center;margin:12px 0 16px;">
+    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-icon-link">
+      <i class="fa-brands fa-instagram"></i>
+    </a>
+    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-icon-link">
+      <i class="fa-brands fa-facebook-f"></i>
+    </a>
+    <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="social-icon-link">
+      <i class="fa-brands fa-x-twitter"></i>
+    </a>
+  </div>
+  <p style="color:var(--text-muted);font-size:13px;">© 2025 RUXOVA PERFUMES. All rights reserved. Developed by RSAGENCY</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/checkout.js"></script>
+</body>
+</html>

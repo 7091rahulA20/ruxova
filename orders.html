@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — RUXOVA PERFUMES</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .order-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .order-modal.open { display: flex; }
+    .order-modal-content {
+      background: var(--black-card); border: 1px solid var(--black-border);
+      border-radius: var(--radius-lg); width: 100%; max-width: 650px;
+      max-height: 90vh; overflow-y: auto; padding: 28px; position: relative;
+    }
+  </style>
+</head>
+<body>
+<div class="page-loader" id="page-loader">
+  <p class="loader-logo gold-text">RUXOVA</p>
+  <div class="loader-ring"></div>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo gold-text">RUXOVA</a>
+  <ul class="navbar-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li id="nav-auth-links" style="display:contents;"></li>
+  </ul>
+  <div class="navbar-actions">
+    <a href="cart.html" class="cart-icon"><span>🛒</span><span class="cart-badge cart-count" style="display:none;">0</span></a>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a><a href="shop.html">Shop</a>
+  <a href="cart.html">Cart</a><a href="orders.html" class="active">My Orders</a>
+  <a href="contact.html">Contact</a>
+  <a href="login.html" class="btn btn-gold" style="margin-top:16px;text-align:center;">Login</a>
+</div>
+
+<div style="background:linear-gradient(135deg,var(--black-soft) 0%,rgba(201,168,76,0.05) 100%);padding:48px 24px 40px;border-bottom:1px solid var(--black-border);">
+  <div style="max-width:950px;margin:0 auto;">
+    <h1 class="section-title" style="margin-bottom:8px;">My <span class="gold-text">Orders</span></h1>
+    <p style="color:var(--text-muted);">Track, view, and manage your fragrance orders.</p>
+
+    <!-- Filters & Search Toolbar -->
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:24px;align-items:center;justify-content:space-between;">
+      <div style="flex:1;min-width:240px;position:relative;">
+        <input type="text" id="order-search-input" class="form-control" placeholder="Search by Order ID or Product name..." style="padding-left:36px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);">🔍</span>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <select id="order-status-filter" class="form-control" style="width:auto;min-width:140px;">
+          <option value="all">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Packed">Packed</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Out for Delivery">Out for Delivery</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+
+        <select id="order-sort-filter" class="form-control" style="width:auto;min-width:140px;">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main style="max-width:950px;margin:0 auto;padding:40px 24px;min-height:50vh;" id="orders-container">
+  <!-- Rendered by JS -->
+</main>
+
+<!-- Order Details Modal -->
+<div id="details-modal" class="order-modal">
+  <div class="order-modal-content">
+    <button type="button" class="close-modal-btn" id="close-details-modal" style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;">✕</button>
+    <div id="details-modal-body"></div>
+  </div>
+</div>
+
+<!-- Cancel Order Confirmation Modal -->
+<div id="cancel-modal" class="order-modal">
+  <div class="order-modal-content" style="max-width:450px;text-align:center;">
+    <h3 style="font-family:var(--font-serif);font-size:22px;color:var(--gold);margin-bottom:12px;">Cancel Order</h3>
+    <p style="color:var(--text-secondary);margin-bottom:20px;">Are you sure you want to cancel this order? This action cannot be undone.</p>
+    <p id="cancel-order-id" style="font-family:var(--font-serif);font-weight:700;color:var(--text-primary);margin-bottom:24px;"></p>
+    
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button type="button" id="confirm-cancel-btn" class="btn btn-gold" style="background:#EF4444;border-color:#EF4444;color:white;">Yes, Cancel Order</button>
+      <button type="button" id="close-cancel-modal" class="btn btn-outline">Keep Order</button>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--black-soft);border-top:1px solid var(--black-border);padding:32px 24px;text-align:center;margin-top:80px;">
+  <p class="gold-text" style="font-family:var(--font-serif);font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:8px;">RUXOVA</p>
+  <div class="social-links-wrap" style="justify-content:center;margin:12px 0 16px;">
+    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-icon-link">
+      <i class="fa-brands fa-instagram"></i>
+    </a>
+    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-icon-link">
+      <i class="fa-brands fa-facebook-f"></i>
+    </a>
+    <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="social-icon-link">
+      <i class="fa-brands fa-x-twitter"></i>
+    </a>
+  </div>
+  <p style="color:var(--text-muted);font-size:13px;">© 2025 RUXOVA PERFUMES. All rights reserved. Developed by RSAGENCY</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/orders.js"></script>
+</body>
+</html>

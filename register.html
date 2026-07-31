@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — RUXOVA PERFUMES</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="display:flex;flex-direction:column;min-height:100vh;">
+
+<div class="page-loader" id="page-loader">
+  <div class="loader-ring"></div>
+</div>
+
+<nav class="navbar" style="border-bottom:none;background:transparent;">
+  <a href="index.html" class="navbar-logo gold-text">RUXOVA</a>
+</nav>
+
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;background:radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, var(--black) 70%);">
+  <div class="card" style="width:100%;max-width:480px;padding:40px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold-dark),var(--gold),var(--gold-light));"></div>
+
+    <div style="text-align:center;margin-bottom:32px;">
+      <h1 style="font-family:var(--font-serif);font-size:28px;font-weight:700;margin-bottom:8px;">Create Account</h1>
+      <p style="color:var(--text-muted);">Join our exclusive fragrance community.</p>
+    </div>
+
+    <form id="register-form">
+      <div class="form-group">
+        <label class="form-label">Full Name <span style="color:var(--error);">*</span></label>
+        <input type="text" id="reg-name" class="form-control" required placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email <span style="color:var(--error);">*</span></label>
+        <input type="email" id="reg-email" class="form-control" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number <span style="color:var(--text-muted);">(Optional)</span></label>
+        <input type="tel" id="reg-phone" class="form-control" placeholder="9876543210" pattern="^[6-9]\d{9}$">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span style="color:var(--error);">*</span></label>
+        <div style="position:relative;">
+          <input type="password" id="reg-password" class="form-control" required placeholder="Min 6 characters" minlength="6" style="padding-right:40px;">
+          <button type="button" id="toggle-reg-pass" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password <span style="color:var(--error);">*</span></label>
+        <input type="password" id="reg-confirm" class="form-control" required placeholder="Re-enter password">
+      </div>
+
+      <button type="submit" id="register-btn" class="btn btn-gold btn-lg" style="width:100%;margin-top:12px;">Create Account</button>
+    </form>
+
+    <div style="text-align:center;margin-top:32px;color:var(--text-secondary);font-size:14px;">
+      Already have an account? <a href="login.html" style="color:var(--gold);text-decoration:none;font-weight:600;">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/auth.js"></script>
+</body>
+</html>
