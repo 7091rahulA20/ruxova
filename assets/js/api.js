@@ -1,9 +1,10 @@
 /* ================================================================
    RUXOVA PERFUMES — API Helper
-   Central fetch wrapper with JWT auth + base URL
+   Central fetch wrapper with JWT auth + base URL + Image Optimizer
    ================================================================ */
 
-const API_BASE = 'https://ruxovabackend.onrender.com/api';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = isLocalhost ? 'http://localhost:5000/api' : 'https://ruxovabackend.onrender.com/api';
 
 /**
  * Get stored auth token
@@ -34,6 +35,17 @@ function clearAuth() {
 function getUser() {
   const u = localStorage.getItem('ruxova_user');
   return u ? JSON.parse(u) : null;
+}
+
+/**
+ * Cloudinary image URL optimizer (inserts f_auto,q_auto,w_...)
+ */
+function optimizeImageUrl(url, width = 500) {
+  if (!url) return '';
+  if (url.includes('res.cloudinary.com') && !url.includes('/f_auto,q_auto')) {
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  }
+  return url;
 }
 
 /**
@@ -90,9 +102,10 @@ const api = {
 };
 
 // ── Exports (global for HTML pages) ─────────────────────────────
-window.api      = api;
-window.getToken = getToken;
-window.setAuth  = setAuth;
-window.clearAuth = clearAuth;
-window.getUser  = getUser;
-window.API_BASE = API_BASE;
+window.api               = api;
+window.getToken          = getToken;
+window.setAuth           = setAuth;
+window.clearAuth         = clearAuth;
+window.getUser           = getUser;
+window.API_BASE          = API_BASE;
+window.optimizeImageUrl  = optimizeImageUrl;

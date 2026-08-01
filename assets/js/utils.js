@@ -156,7 +156,8 @@ function renderProductCard(p) {
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
 
-  const imageUrl = p.images?.[0]?.url || 'assets/images/placeholder.jpg';
+  const rawImageUrl = p.images?.[0]?.url || 'assets/images/placeholder.jpg';
+  const imageUrl = window.optimizeImageUrl ? window.optimizeImageUrl(rawImageUrl, 500) : rawImageUrl;
 
   return `
     <div class="product-card fade-up"
@@ -207,7 +208,7 @@ function renderProductCard(p) {
             style="padding:10px 14px;"
             onclick="window.location.href='product.html?id=${p._id}';"
           >
-            View
+            View Now
           </button>
         </div>
       </div>

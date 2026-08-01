@@ -38,10 +38,13 @@ async function loadProduct(id) {
 
   try {
     const { product } = await api.get(`/products/${id}`);
-    currentProduct = product;
-    productImages  = product.images?.length > 0
-      ? product.images.map(img => img.url)
-      : ['assets/images/placeholder.jpg'];
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
+    } else if (product.image) {
+      productImages = [typeof product.image === 'string' ? product.image : (product.image.url || 'assets/images/placeholder.jpg')];
+    } else {
+      productImages = ['assets/images/placeholder.jpg'];
+    }
 
     currentImageIndex = 0;
     preloadImages(productImages);
@@ -119,12 +122,19 @@ function preloadImages(urls) {
 
 function renderProduct(p) {
   const wishlistActive = isInWishlist(p._id);
-  const discountPct = p.comparePrice
+  const discountPct = p.comparePrice && p.comparePrice > p.price
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
 
   const avgRatingNum = p.avgRating || 5.0;
   const numReviewsNum = p.numReviews || 0;
+
+  // Build thumbnail images list (guarantee 4 thumbnails: Image 1, Image 2, Image 3, Image 4)
+  let thumbs = [...productImages];
+  if (thumbs.length === 0) thumbs = ['assets/images/placeholder.jpg'];
+  while (thumbs.length < 4) {
+    thumbs.push(thumbs[0]);
+  }
 
   document.getElementById('product-container').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;" class="product-layout fade-up">
@@ -140,35 +150,31 @@ function renderProduct(p) {
           ${discountPct ? `<div style="position:absolute;top:16px;left:16px;background:var(--gold);color:var(--black);padding:6px 14px;border-radius:20px;font-weight:700;font-size:13px;z-index:2;">${discountPct}% OFF</div>` : ''}
           
           <!-- Prev / Next Slider Arrows -->
-          ${productImages.length > 1 ? `
-            <button type="button" id="gallery-prev" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">‹</button>
-            <button type="button" id="gallery-next" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">›</button>
-          ` : ''}
+          <button type="button" id="gallery-prev" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">‹</button>
+          <button type="button" id="gallery-next" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">›</button>
 
           <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.7);color:var(--text-primary);padding:4px 10px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;">
-            🔍 Click to Zoom (Image 1 of ${productImages.length})
+            🔍 Click to Zoom (Image <span id="img-index-display">1</span> of ${thumbs.length})
           </div>
         </div>
 
-        <!-- Thumbnails Gallery Row -->
-        ${productImages.length > 1 ? `
-          <div style="display:flex;gap:12px;margin-top:16px;overflow-x:auto;padding-bottom:6px;" id="thumb-row">
-            ${productImages.map((imgUrl, i) => `
-              <div style="position:relative;flex-shrink:0;">
-                <img
-                  src="${imgUrl}"
-                  alt="${p.name} thumbnail ${i + 1}"
-                  data-index="${i}"
-                  class="thumb-img ${i === 0 ? 'active' : ''}"
-                  style="width:76px;height:76px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid ${i === 0 ? 'var(--gold)' : 'var(--black-border)'};transition:all 0.2s;"
-                >
-                <span style="position:absolute;bottom:2px;right:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px;pointer-events:none;">
-                  #${i + 1}
-                </span>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
+        <!-- Thumbnails Gallery Row (Image 1, Image 2, Image 3, Image 4) -->
+        <div style="display:flex;gap:12px;margin-top:16px;overflow-x:auto;padding-bottom:6px;" id="thumb-row">
+          ${thumbs.map((imgUrl, i) => `
+            <div style="position:relative;flex-shrink:0;">
+              <img
+                src="${imgUrl}"
+                alt="${p.name} Image ${i + 1}"
+                data-index="${i}"
+                class="thumb-img ${i === 0 ? 'active' : ''}"
+                style="width:76px;height:76px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid ${i === 0 ? 'var(--gold)' : 'var(--black-border)'};transition:all 0.2s;"
+              >
+              <span style="position:absolute;bottom:2px;right:4px;background:rgba(0,0,0,0.8);color:var(--gold);font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;pointer-events:none;">
+                Image ${i + 1}
+              </span>
+            </div>
+          `).join('')}
+        </div>
       </div>
 
       <!-- Info Column -->
@@ -190,6 +196,27 @@ function renderProduct(p) {
 
         <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;font-size:15px;">${p.description}</p>
 
+        <!-- Size Selection -->
+        <div style="margin-bottom:24px;">
+          <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Volume / Size:</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;" id="size-picker">
+            ${['50ml', '100ml', '200ml'].map(s => {
+              const isSelected = (p.volume || '100ml').toLowerCase().includes(s.toLowerCase()) || s === '100ml';
+              return `
+                <button
+                  type="button"
+                  class="size-opt-btn"
+                  data-size="${s}"
+                  onclick="selectSize('${s}')"
+                  style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
+                >
+                  ${s}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
         <!-- Specifications & Details Grid -->
         <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
           <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);">Product Specifications</h3>
@@ -201,17 +228,27 @@ function renderProduct(p) {
           </div>
         </div>
 
-        <!-- Scent Notes -->
-        ${p.scentNotes?.top || p.scentNotes?.middle || p.scentNotes?.base ? `
-          <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
-            <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);">Fragrance Notes Profile</h3>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
-              ${p.scentNotes.top    ? scentNote('Top Notes',    p.scentNotes.top)    : ''}
-              ${p.scentNotes.middle ? scentNote('Heart Notes',  p.scentNotes.middle) : ''}
-              ${p.scentNotes.base   ? scentNote('Base Notes',   p.scentNotes.base)   : ''}
-            </div>
+        <!-- Scent Notes Profile -->
+        <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
+          <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);">Fragrance Notes Profile</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;text-align:center;">
+            ${scentNote('Top Notes',    p.scentNotes?.top    || 'Fresh Bergamot, Citrus Zest')}
+            ${scentNote('Heart Notes',  p.scentNotes?.middle || 'French Lavender, Royal Rose')}
+            ${scentNote('Base Notes',   p.scentNotes?.base   || 'Warm Amber, Cedarwood, Musk')}
           </div>
-        ` : ''}
+        </div>
+
+        <!-- Ingredients & Performance -->
+        <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
+          <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:12px;color:var(--gold);">Ingredients & Performance</h3>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
+            <strong style="color:var(--text-primary);">Ingredients:</strong> ${p.ingredients || 'Alcohol Denat., Parfum (Fragrance), Aqua (Water), Limonene, Linalool, Citronellol, Geraniol, Coumarin, Citral.'}
+          </p>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);">
+            <span>⏱️ <strong>Longevity:</strong> Long Lasting (8–12 Hours)</span>
+            <span>✨ <strong>Sillage:</strong> Strong Luxury Impression</span>
+          </div>
+        </div>
 
         <!-- Quantity Selector -->
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
@@ -228,13 +265,13 @@ function renderProduct(p) {
           <button id="add-to-cart-btn" class="btn btn-gold btn-lg" onclick="handleAddToCartDetail()" ${p.stock === 0 ? 'disabled' : ''}>
             🛒 Add to Cart
           </button>
-          <a href="checkout.html" id="buy-now-btn"
+          <button id="buy-now-btn"
              class="btn btn-outline-gold btn-lg"
-             onclick="handleBuyNow()"
-             style="text-align:center;text-decoration:none;"
+             onclick="handleBuyNow(event)"
+             ${p.stock === 0 ? 'disabled' : ''}
           >
-            ⚡ Buy Now
-          </a>
+            ⚡ Order Now
+          </button>
         </div>
 
         <!-- Wishlist -->
@@ -338,10 +375,16 @@ function switchGalleryImage(index) {
 
   currentImageIndex = index;
   const mainImg = document.getElementById('main-image');
+  const indexDisplay = document.getElementById('img-index-display');
+  
+  if (indexDisplay) {
+    indexDisplay.textContent = currentImageIndex + 1;
+  }
+
   if (mainImg) {
     mainImg.style.opacity = '0.3';
     setTimeout(() => {
-      mainImg.src = productImages[currentImageIndex];
+      mainImg.src = productImages[currentImageIndex] || mainImg.src;
       mainImg.style.opacity = '1';
     }, 120);
   }
@@ -543,6 +586,23 @@ function renderReviews(reviews) {
   `).join('');
 }
 
+let selectedSize = '100ml';
+
+function selectSize(size) {
+  selectedSize = size;
+  document.querySelectorAll('.size-opt-btn').forEach(btn => {
+    if (btn.dataset.size === size) {
+      btn.style.borderColor = 'var(--gold)';
+      btn.style.color = 'var(--gold)';
+      btn.style.background = 'rgba(201, 168, 76, 0.15)';
+    } else {
+      btn.style.borderColor = 'var(--black-border)';
+      btn.style.color = 'var(--text-primary)';
+      btn.style.background = 'var(--black-soft)';
+    }
+  });
+}
+
 let qty = 1;
 function changeQty(delta) {
   qty = Math.max(1, qty + delta);
@@ -554,12 +614,16 @@ function handleAddToCartDetail() {
   for (let i = 0; i < qty; i++) {
     addToCart(currentProduct, 1);
   }
-  showToast(`${qty} × ${currentProduct.name} added to cart!`, 'success');
+  showToast(`${qty} × ${currentProduct.name} (${selectedSize}) added to cart!`, 'success');
 }
 
-function handleBuyNow() {
+function handleBuyNow(e) {
+  if (e) e.preventDefault();
   if (!currentProduct) return;
-  addToCart(currentProduct, qty);
+  for (let i = 0; i < qty; i++) {
+    addToCart(currentProduct, 1);
+  }
+  window.location.href = 'checkout.html';
 }
 
 async function handleWishlist(id) {
@@ -590,3 +654,5 @@ async function handleWishlist(id) {
 
 window.selectRatingScore = selectRatingScore;
 window.submitReview       = submitReview;
+window.selectSize         = selectSize;
+window.handleBuyNow       = handleBuyNow;

@@ -9,6 +9,10 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="http://localhost:3000/index.html">
 
+  <!-- Preconnect critical origins -->
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="preconnect" href="http://localhost:5000" crossorigin>
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="http://localhost:3000/index.html">
@@ -381,10 +385,10 @@
 </footer>
 
 <!-- Scripts (order matters!) -->
-<script src="assets/js/api.js"></script>
-<script src="assets/js/cart.js"></script>
-<script src="assets/js/utils.js"></script>
-<script src="assets/js/home.js"></script>
+<script src="assets/js/api.js" defer></script>
+<script src="assets/js/cart.js" defer></script>
+<script src="assets/js/utils.js" defer></script>
+<script src="assets/js/home.js" defer></script>
 
 <style>
   @media(max-width:768px){
