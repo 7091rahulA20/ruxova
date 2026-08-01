@@ -208,7 +208,7 @@ function renderProductCard(p) {
             style="padding:10px 14px;"
             onclick="window.location.href='product.html?id=${p._id}';"
           >
-            View Now
+            Order Now
           </button>
         </div>
       </div>

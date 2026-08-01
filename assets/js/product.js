@@ -1,7 +1,7 @@
 /* ================================================================
-   RUXOVA PERFUMES — Product Detail Page & Image Gallery JS
-   Gallery, Thumbnails, Lightbox Zoom, Touch Swipe, Keyboard Nav,
-   Specifications, Reviews & Review Submission, Related Products.
+   RUXOVA PERFUMES — Dedicated Product Details & Order Page JS
+   Gallery, Thumbnails, Lightbox Zoom, 5-Star Breakdown, Reviews,
+   Delivery Info, Features Badges, Related Products, Dynamic SEO.
    ================================================================ */
 
 let currentProduct = null;
@@ -9,6 +9,7 @@ let currentImageIndex = 0;
 let productImages = [];
 let currentZoom = 1;
 let selectedRating = 5;
+let storeSettings = { shippingCharge: 99, freeShippingThreshold: 999 };
 
 document.addEventListener('DOMContentLoaded', async () => {
   setActiveNavLink();
@@ -22,6 +23,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Fetch settings for dynamic delivery info
+  try {
+    const res = await api.get('/settings');
+    if (res.settings) {
+      storeSettings = {
+        shippingCharge: Number(res.settings.shippingCharge ?? 99),
+        freeShippingThreshold: Number(res.settings.freeShippingThreshold ?? 999),
+      };
+    }
+  } catch (e) {}
+
   await loadProduct(productId);
   initKeyboardNav();
   initLightboxControls();
@@ -34,10 +46,18 @@ async function loadProduct(id) {
   const container = document.getElementById('product-container');
   if (!container) return;
 
-  container.innerHTML = `<div style="text-align:center;padding:80px;"><div class="loader-ring" style="margin:auto;"></div></div>`;
+  container.innerHTML = `
+    <div style="text-align:center;padding:100px 20px;">
+      <div class="loader-ring" style="margin:auto;"></div>
+      <p style="color:var(--gold);margin-top:16px;font-size:14px;letter-spacing:2px;text-transform:uppercase;">Loading Perfume Details...</p>
+    </div>`;
 
   try {
     const { product } = await api.get(`/products/${id}`);
+    if (!product) throw new Error('Product not found');
+    currentProduct = product;
+
+    // Process images array
     if (Array.isArray(product.images) && product.images.length > 0) {
       productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
     } else if (product.image) {
@@ -51,50 +71,19 @@ async function loadProduct(id) {
 
     renderProduct(product);
 
-    const prodImageUrl = productImages[0] || 'assets/images/placeholder.jpg';
+    // Dynamic SEO Update
+    const firstImgUrl = productImages[0] ? (window.optimizeImageUrl ? window.optimizeImageUrl(productImages[0], 600) : productImages[0]) : '';
     const canonicalUrl = `${window.location.origin}/product.html?id=${product._id}`;
     const cleanDesc = (product.description || `Buy ${product.name} luxury perfume online at RUXOVA PERFUMES.`).replace(/<[^>]*>?/gm, '');
 
-    if (typeof updatePageSeo === 'function') {
-      updatePageSeo({
-        title: `${product.name} — Luxury Perfume | RUXOVA PERFUMES`,
-        description: cleanDesc,
-        keywords: `${product.name}, ${product.category?.name || 'Perfume'}, luxury perfume, fragrance, buy perfume online`,
-        image: prodImageUrl,
-        type: 'product',
-        canonicalUrl: canonicalUrl,
-        productSchema: {
-          '@context': 'https://schema.org/',
-          '@type': 'Product',
-          'name': product.name,
-          'image': productImages,
-          'description': cleanDesc,
-          'sku': product._id,
-          'brand': {
-            '@type': 'Brand',
-            'name': 'RUXOVA PERFUMES'
-          },
-          'offers': {
-            '@type': 'Offer',
-            'url': canonicalUrl,
-            'priceCurrency': 'INR',
-            'price': product.price,
-            'priceValidUntil': '2028-12-31',
-            'itemCondition': 'https://schema.org/NewCondition',
-            'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
-          },
-          ...(product.numReviews > 0 ? {
-            'aggregateRating': {
-              '@type': 'AggregateRating',
-              'ratingValue': product.avgRating || 5,
-              'reviewCount': product.numReviews
-            }
-          } : {})
-        }
-      });
-    } else {
-      document.title = `${product.name} — RUXOVA PERFUMES`;
-    }
+    updateDynamicSeo({
+      title: `${product.name} — Luxury Perfume | RUXOVA PERFUMES`,
+      description: cleanDesc,
+      keywords: `${product.name}, ${product.category?.name || 'Perfume'}, luxury perfume, fragrance, buy perfume online`,
+      image: firstImgUrl,
+      url: canonicalUrl,
+      product: product
+    });
 
     const breadcrumb = document.getElementById('breadcrumb-title');
     if (breadcrumb) breadcrumb.textContent = product.name;
@@ -102,11 +91,87 @@ async function loadProduct(id) {
     await loadRelatedProducts(product.category?._id || product.category);
   } catch (err) {
     container.innerHTML = `
-      <div style="text-align:center;padding:80px;">
-        <p style="color:var(--error);">${err.message || 'Product not found'}</p>
-        <a href="shop.html" class="btn btn-gold" style="margin-top:20px;">Back to Shop</a>
+      <div style="text-align:center;padding:80px 20px;">
+        <p style="color:var(--error);font-size:18px;margin-bottom:16px;">${err.message || 'Product not found'}</p>
+        <a href="shop.html" class="btn btn-gold btn-lg">Return to Shop</a>
       </div>`;
   }
+}
+
+// ── Dynamic SEO Updates ───────────────────────────────────────────
+
+function updateDynamicSeo({ title, description, keywords, image, url, product }) {
+  document.title = title;
+
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', description);
+
+  let metaKw = document.querySelector('meta[name="keywords"]');
+  if (!metaKw) {
+    metaKw = document.createElement('meta');
+    metaKw.name = 'keywords';
+    document.head.appendChild(metaKw);
+  }
+  metaKw.setAttribute('content', keywords);
+
+  // Open Graph
+  const ogTags = [
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:image', content: image },
+    { property: 'og:url', content: url },
+    { property: 'og:type', content: 'product' },
+  ];
+
+  ogTags.forEach(({ property, content }) => {
+    let el = document.querySelector(`meta[property="${property}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute('property', property);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', content);
+  });
+
+  // JSON-LD Product Schema
+  let schemaScript = document.getElementById('json-ld-product');
+  if (!schemaScript) {
+    schemaScript = document.createElement('script');
+    schemaScript.id = 'json-ld-product';
+    schemaScript.type = 'application/ld+json';
+    document.head.appendChild(schemaScript);
+  }
+
+  const schemaData = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    'name': product.name,
+    'image': productImages,
+    'description': description,
+    'sku': product._id,
+    'brand': {
+      '@type': 'Brand',
+      'name': 'RUXOVA PERFUMES'
+    },
+    'offers': {
+      '@type': 'Offer',
+      'url': url,
+      'priceCurrency': 'INR',
+      'price': product.price,
+      'priceValidUntil': '2028-12-31',
+      'itemCondition': 'https://schema.org/NewCondition',
+      'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+    },
+    ...(product.numReviews > 0 ? {
+      'aggregateRating': {
+        '@type': 'AggregateRating',
+        'ratingValue': product.avgRating || 5,
+        'reviewCount': product.numReviews
+      }
+    } : {})
+  };
+
+  schemaScript.textContent = JSON.stringify(schemaData);
 }
 
 // ── Preload Images for smooth transition ──────────────────────────
@@ -114,7 +179,7 @@ async function loadProduct(id) {
 function preloadImages(urls) {
   urls.forEach(url => {
     const img = new Image();
-    img.src = url;
+    img.src = window.optimizeImageUrl ? window.optimizeImageUrl(url, 600) : url;
   });
 }
 
@@ -126,80 +191,102 @@ function renderProduct(p) {
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
 
-  const avgRatingNum = p.avgRating || 5.0;
-  const numReviewsNum = p.numReviews || 0;
+  const avgRatingNum = p.avgRating || 0;
+  const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
 
-  // Build thumbnail images list (guarantee 4 thumbnails: Image 1, Image 2, Image 3, Image 4)
+  // Gallery thumbnails array
   let thumbs = [...productImages];
   if (thumbs.length === 0) thumbs = ['assets/images/placeholder.jpg'];
-  while (thumbs.length < 4) {
-    thumbs.push(thumbs[0]);
-  }
+
+  const shippingText = storeSettings.freeShippingThreshold > 0 && p.price >= storeSettings.freeShippingThreshold
+    ? '<span style="color:var(--success);font-weight:700;">FREE Delivery</span>'
+    : `<span style="color:var(--gold);">${formatCurrency(storeSettings.shippingCharge)}</span>`;
 
   document.getElementById('product-container').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;" class="product-layout fade-up">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;" class="product-layout fade-up">
 
-      <!-- Image Gallery Column -->
+      <!-- Gallery Column -->
       <div>
         <div id="main-image-box" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--black-card);border:1px solid var(--black-border);aspect-ratio:1;cursor:zoom-in;">
           <img id="main-image"
-            src="${productImages[0]}"
+            src="${window.optimizeImageUrl ? window.optimizeImageUrl(productImages[0], 600) : productImages[0]}"
             alt="${p.name}"
+            loading="eager"
             style="width:100%;height:100%;object-fit:cover;transition:opacity 0.25s ease;"
           >
-          ${discountPct ? `<div style="position:absolute;top:16px;left:16px;background:var(--gold);color:var(--black);padding:6px 14px;border-radius:20px;font-weight:700;font-size:13px;z-index:2;">${discountPct}% OFF</div>` : ''}
-          
-          <!-- Prev / Next Slider Arrows -->
-          <button type="button" id="gallery-prev" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">‹</button>
-          <button type="button" id="gallery-next" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">›</button>
+          ${discountPct ? `<div style="position:absolute;top:16px;left:16px;background:var(--gold);color:var(--black);padding:6px 14px;border-radius:20px;font-weight:700;font-size:13px;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,0.3);">${discountPct}% OFF</div>` : ''}
+          <div style="position:absolute;top:16px;right:16px;z-index:2;">
+            <span class="badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}" style="padding:6px 14px;font-size:12px;">
+              ${p.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </span>
+          </div>
 
-          <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.7);color:var(--text-primary);padding:4px 10px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;">
-            🔍 Click to Zoom (Image <span id="img-index-display">1</span> of ${thumbs.length})
+          <!-- Prev / Next Slider Arrows -->
+          ${thumbs.length > 1 ? `
+            <button type="button" id="gallery-prev" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">‹</button>
+            <button type="button" id="gallery-next" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">›</button>
+          ` : ''}
+
+          <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.75);color:var(--text-primary);padding:6px 12px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px;">
+            <span>🔍 Click to Zoom</span>
+            <span>•</span>
+            <span>Image <span id="img-index-display">1</span> of ${thumbs.length}</span>
           </div>
         </div>
 
-        <!-- Thumbnails Gallery Row (Image 1, Image 2, Image 3, Image 4) -->
+        <!-- Thumbnails Gallery Row -->
         <div style="display:flex;gap:12px;margin-top:16px;overflow-x:auto;padding-bottom:6px;" id="thumb-row">
           ${thumbs.map((imgUrl, i) => `
             <div style="position:relative;flex-shrink:0;">
               <img
-                src="${imgUrl}"
-                alt="${p.name} Image ${i + 1}"
+                src="${window.optimizeImageUrl ? window.optimizeImageUrl(imgUrl, 150) : imgUrl}"
+                alt="${p.name} Thumbnail ${i + 1}"
                 data-index="${i}"
                 class="thumb-img ${i === 0 ? 'active' : ''}"
+                loading="lazy"
                 style="width:76px;height:76px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid ${i === 0 ? 'var(--gold)' : 'var(--black-border)'};transition:all 0.2s;"
               >
-              <span style="position:absolute;bottom:2px;right:4px;background:rgba(0,0,0,0.8);color:var(--gold);font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;pointer-events:none;">
-                Image ${i + 1}
-              </span>
             </div>
           `).join('')}
+        </div>
+
+        <!-- Product Guarantee Badges Section -->
+        <div style="margin-top:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;">
+          ${featureBadge('🌿', 'Long Lasting', '8 to 12+ Hours Sillage')}
+          ${featureBadge('👑', 'Premium Quality', 'Finest Botanical Oils')}
+          ${featureBadge('🛡️', '100% Original', 'Direct from RUXOVA')}
+          ${featureBadge('🚚', 'Fast Delivery', 'Dispatched in 24 Hours')}
         </div>
       </div>
 
       <!-- Info Column -->
       <div>
-        <p style="color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">${p.category?.name || 'Luxury Fragrance'}</p>
-        <h1 style="font-family:var(--font-serif);font-size:clamp(26px,3.5vw,40px);font-weight:700;line-height:1.2;margin-bottom:12px;">${p.name}</h1>
+        <p style="color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;font-weight:600;">
+          ${p.category?.name || 'Luxury Fragrance'}
+        </p>
+        <h1 style="font-family:var(--font-serif);font-size:clamp(26px,3.5vw,38px);font-weight:700;line-height:1.2;margin-bottom:12px;color:var(--text-primary);">${p.name}</h1>
 
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
           ${renderStars(avgRatingNum)}
           <span style="color:var(--text-secondary);font-size:14px;font-weight:600;">
-            ${avgRatingNum.toFixed(1)} (${numReviewsNum} customer review${numReviewsNum !== 1 ? 's' : ''})
+            ${avgRatingNum > 0 ? avgRatingNum.toFixed(1) : '5.0'} (${numReviewsNum} customer review${numReviewsNum !== 1 ? 's' : ''})
           </span>
+          <span style="color:var(--text-muted);">•</span>
+          <span style="color:var(--gold);font-size:13px;font-weight:600;">Brand: RUXOVA PERFUMES</span>
         </div>
 
-        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;">
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;background:rgba(201,168,76,0.06);padding:14px 20px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);">
           <span style="font-size:36px;font-weight:700;color:var(--gold);">${formatCurrency(p.price)}</span>
           ${p.comparePrice ? `<span style="font-size:20px;text-decoration:line-through;color:var(--text-muted);">${formatCurrency(p.comparePrice)}</span>` : ''}
+          ${discountPct ? `<span style="color:var(--success);font-weight:700;font-size:14px;">Save ${discountPct}%</span>` : ''}
         </div>
 
         <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;font-size:15px;">${p.description}</p>
 
-        <!-- Size Selection -->
+        <!-- Volume Selection -->
         <div style="margin-bottom:24px;">
           <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Volume / Size:</label>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;" id="size-picker">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;" id="size-picker">
             ${['50ml', '100ml', '200ml'].map(s => {
               const isSelected = (p.volume || '100ml').toLowerCase().includes(s.toLowerCase()) || s === '100ml';
               return `
@@ -208,7 +295,7 @@ function renderProduct(p) {
                   class="size-opt-btn"
                   data-size="${s}"
                   onclick="selectSize('${s}')"
-                  style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
+                  style="padding:10px 22px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
                 >
                   ${s}
                 </button>
@@ -217,59 +304,77 @@ function renderProduct(p) {
           </div>
         </div>
 
-        <!-- Specifications & Details Grid -->
+        <!-- Delivery & Shipping Info Card -->
+        <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
+          <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);display:flex;align-items:center;gap:8px;">
+            <span>🚚</span> Delivery & Shipping Information
+          </h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+            <div>
+              <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Shipping Charge:</span>
+              <span>${shippingText}</span>
+            </div>
+            <div>
+              <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Free Shipping:</span>
+              <span style="color:var(--text-primary);">${storeSettings.freeShippingThreshold > 0 ? `Orders above ${formatCurrency(storeSettings.freeShippingThreshold)}` : 'On All Orders'}</span>
+            </div>
+            <div>
+              <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Estimated Delivery:</span>
+              <span style="color:var(--text-primary);">3 – 5 Business Days</span>
+            </div>
+            <div>
+              <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Payment Options:</span>
+              <span style="color:var(--text-primary);">UPI & Cash on Delivery (COD)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specifications Grid -->
         <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
           <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);">Product Specifications</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             ${detailChip('Brand', 'RUXOVA PERFUMES')}
             ${detailChip('Volume', p.volume || '100ml')}
-            ${detailChip('Gender', p.gender || 'Unisex')}
-            ${detailChip('Stock', p.stock > 0 ? `<span style="color:var(--success);">${p.stock} available</span>` : `<span style="color:var(--error);">Out of Stock</span>`)}
+            ${detailChip('Fragrance Type', p.gender || 'Unisex')}
+            ${detailChip('Stock Status', p.stock > 0 ? `<span style="color:var(--success);font-weight:600;">${p.stock} Units Available</span>` : `<span style="color:var(--error);font-weight:600;">Out of Stock</span>`)}
+            ${p.tags?.length ? detailChip('Tags', p.tags.slice(0, 3).join(', ')) : ''}
+            ${detailChip('SKU / Product ID', p._id.substring(p._id.length - 8).toUpperCase())}
           </div>
         </div>
 
         <!-- Scent Notes Profile -->
         <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
           <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:14px;color:var(--gold);">Fragrance Notes Profile</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;text-align:center;">
-            ${scentNote('Top Notes',    p.scentNotes?.top    || 'Fresh Bergamot, Citrus Zest')}
-            ${scentNote('Heart Notes',  p.scentNotes?.middle || 'French Lavender, Royal Rose')}
-            ${scentNote('Base Notes',   p.scentNotes?.base   || 'Warm Amber, Cedarwood, Musk')}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;text-align:center;">
+            ${scentNote('Top Notes',   p.scentNotes?.top    || 'Fresh Bergamot, Pink Pepper')}
+            ${scentNote('Heart Notes', p.scentNotes?.middle || 'French Lavender, Royal Rose')}
+            ${scentNote('Base Notes',  p.scentNotes?.base   || 'Warm Amber, Cedarwood, Oud')}
           </div>
         </div>
 
-        <!-- Ingredients & Performance -->
-        <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
-          <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:12px;color:var(--gold);">Ingredients & Performance</h3>
-          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
-            <strong style="color:var(--text-primary);">Ingredients:</strong> ${p.ingredients || 'Alcohol Denat., Parfum (Fragrance), Aqua (Water), Limonene, Linalool, Citronellol, Geraniol, Coumarin, Citral.'}
+        <!-- Ingredients & Longevity -->
+        <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:28px;">
+          <h3 style="font-family:var(--font-serif);font-size:16px;margin-bottom:10px;color:var(--gold);">Ingredients & Performance</h3>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;">
+            <strong style="color:var(--text-primary);">Ingredients:</strong> ${p.ingredients || 'Alcohol Denat., Parfum (Fragrance), Aqua (Water), Limonene, Linalool, Citronellol, Geraniol, Coumarin.'}
           </p>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);">
-            <span>⏱️ <strong>Longevity:</strong> Long Lasting (8–12 Hours)</span>
-            <span>✨ <strong>Sillage:</strong> Strong Luxury Impression</span>
-          </div>
         </div>
 
-        <!-- Quantity Selector -->
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+        <!-- Quantity & Action Buttons -->
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
           <label style="font-size:14px;color:var(--text-secondary);font-weight:600;">Quantity:</label>
           <div style="display:flex;align-items:center;border:1px solid var(--black-border);border-radius:8px;overflow:hidden;background:var(--black-soft);">
-            <button type="button" onclick="changeQty(-1)" style="width:40px;height:40px;background:none;color:var(--text-primary);border:none;cursor:pointer;font-size:18px;">−</button>
-            <span id="qty-display" style="width:44px;text-align:center;font-weight:600;color:var(--gold);">1</span>
-            <button type="button" onclick="changeQty(1)"  style="width:40px;height:40px;background:none;color:var(--text-primary);border:none;cursor:pointer;font-size:18px;">+</button>
+            <button type="button" onclick="changeQty(-1)" style="width:42px;height:42px;background:none;color:var(--text-primary);border:none;cursor:pointer;font-size:18px;">−</button>
+            <span id="qty-display" style="width:48px;text-align:center;font-weight:700;color:var(--gold);font-size:16px;">1</span>
+            <button type="button" onclick="changeQty(1)"  style="width:42px;height:42px;background:none;color:var(--text-primary);border:none;cursor:pointer;font-size:18px;">+</button>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
-          <button id="add-to-cart-btn" class="btn btn-gold btn-lg" onclick="handleAddToCartDetail()" ${p.stock === 0 ? 'disabled' : ''}>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+          <button id="add-to-cart-btn" class="btn btn-gold btn-lg" onclick="handleAddToCartDetail()" ${p.stock === 0 ? 'disabled' : ''} style="width:100%;">
             🛒 Add to Cart
           </button>
-          <button id="buy-now-btn"
-             class="btn btn-outline-gold btn-lg"
-             onclick="handleBuyNow(event)"
-             ${p.stock === 0 ? 'disabled' : ''}
-          >
+          <button id="buy-now-btn" class="btn btn-outline-gold btn-lg" onclick="handleBuyNow(event)" ${p.stock === 0 ? 'disabled' : ''} style="width:100%;">
             ⚡ Order Now
           </button>
         </div>
@@ -285,11 +390,25 @@ function renderProduct(p) {
       </div>
     </div>
 
-    <!-- Customer Reviews & Submission Form -->
+    <!-- Ratings & Customer Reviews Section -->
     <div style="margin-top:64px;" id="reviews-section">
-      <h2 style="font-family:var(--font-serif);font-size:26px;margin-bottom:24px;border-bottom:1px solid var(--black-border);padding-bottom:16px;">Customer Reviews & Ratings</h2>
+      <h2 style="font-family:var(--font-serif);font-size:26px;margin-bottom:24px;border-bottom:1px solid var(--black-border);padding-bottom:16px;">Customer Ratings & Reviews</h2>
+
+      <!-- Reviews Overview & Breakdown Grid -->
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:32px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:28px;margin-bottom:32px;align-items:center;" class="review-breakdown-grid">
+        <div style="text-align:center;border-right:1px solid var(--black-border);padding-right:24px;" class="rating-avg-box">
+          <p style="font-size:52px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:8px;">${avgRatingNum > 0 ? avgRatingNum.toFixed(1) : '5.0'}</p>
+          <div style="margin-bottom:8px;">${renderStars(avgRatingNum)}</div>
+          <p style="color:var(--text-muted);font-size:14px;">Based on ${numReviewsNum} customer review${numReviewsNum !== 1 ? 's' : ''}</p>
+        </div>
+
+        <div>
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-primary);text-transform:uppercase;letter-spacing:1px;">Rating Breakdown</h4>
+          ${renderRatingBreakdown(p.reviews || [])}
+        </div>
+      </div>
       
-      <!-- Review Form -->
+      <!-- Write Review Form -->
       <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:24px;margin-bottom:32px;">
         <h3 style="font-family:var(--font-serif);font-size:18px;margin-bottom:16px;color:var(--gold);">Write a Customer Review</h3>
         <form id="review-form" onsubmit="submitReview(event)" style="display:flex;flex-direction:column;gap:16px;">
@@ -303,17 +422,17 @@ function renderProduct(p) {
           </div>
           <div>
             <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:8px;">Your Review:</label>
-            <textarea id="review-comment" class="form-control" rows="3" placeholder="Share details about the scent profile, longevity, and your experience..." required style="width:100%;padding:12px;background:var(--black-soft);border:1px solid var(--black-border);border-radius:8px;color:#fff;"></textarea>
+            <textarea id="review-comment" class="form-control" rows="3" placeholder="Share your thoughts about the fragrance, sillage, longevity, and quality..." required style="width:100%;padding:12px;background:var(--black-soft);border:1px solid var(--black-border);border-radius:8px;color:#fff;"></textarea>
           </div>
           <button type="submit" class="btn btn-gold" style="align-self:flex-start;">Submit Review</button>
         </form>
       </div>
 
-      <!-- Reviews List -->
-      ${renderReviews(p.reviews)}
+      <!-- Customer Reviews List -->
+      ${renderReviewsList(p.reviews || [])}
     </div>
 
-    <!-- Related Products Container -->
+    <!-- Related Perfumes Section -->
     <div style="margin-top:64px;" id="related-section">
       <h2 style="font-family:var(--font-serif);font-size:26px;margin-bottom:32px;border-bottom:1px solid var(--black-border);padding-bottom:16px;">Related Perfumes</h2>
       <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px;"></div>
@@ -321,6 +440,91 @@ function renderProduct(p) {
   `;
 
   initGalleryInteractions();
+}
+
+// ── Rating Breakdown Calculation ──────────────────────────────────
+
+function renderRatingBreakdown(reviews) {
+  const total = reviews.length;
+  const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  
+  if (total > 0) {
+    reviews.forEach(r => {
+      const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
+      counts[star] = (counts[star] || 0) + 1;
+    });
+  } else {
+    counts[5] = 1; // Default demonstration
+  }
+
+  const effectiveTotal = total > 0 ? total : 1;
+
+  return [5, 4, 3, 2, 1].map(star => {
+    const count = counts[star] || 0;
+    const pct = Math.round((count / effectiveTotal) * 100);
+    return `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13px;">
+        <span style="width:36px;color:var(--text-secondary);font-weight:600;">${star} ★</span>
+        <div style="flex:1;height:8px;background:var(--black-soft);border-radius:4px;overflow:hidden;border:1px solid var(--black-border);">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-dark));border-radius:4px;transition:width 0.4s ease;"></div>
+        </div>
+        <span style="width:40px;text-align:right;color:var(--text-muted);font-size:12px;">${pct}%</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Feature Badges & Details Chips ────────────────────────────────
+
+function featureBadge(icon, title, desc) {
+  return `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.1);border:1px solid var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--gold);flex-shrink:0;">${icon}</div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:var(--text-primary);margin:0;">${title}</p>
+        <p style="font-size:11px;color:var(--text-muted);margin:0;">${desc}</p>
+      </div>
+    </div>`;
+}
+
+function detailChip(label, value) {
+  return `
+    <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:10px;padding:12px 14px;">
+      <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">${label}</p>
+      <p style="font-size:13px;font-weight:600;color:var(--text-primary);margin:0;">${value}</p>
+    </div>`;
+}
+
+function scentNote(label, value) {
+  return `
+    <div style="background:var(--black-card);border:1px solid var(--black-border);padding:12px;border-radius:8px;">
+      <p style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600;">${label}</p>
+      <p style="font-size:12px;color:var(--text-primary);margin:0;">${value}</p>
+    </div>`;
+}
+
+// ── Customer Reviews List ─────────────────────────────────────────
+
+function renderReviewsList(reviews) {
+  if (!reviews || !reviews.length) {
+    return `<div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:32px;text-align:center;"><p style="color:var(--text-muted);margin:0;">No customer reviews yet. Be the first to review this perfume!</p></div>`;
+  }
+
+  return reviews.map(r => `
+    <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <p style="font-weight:600;font-size:15px;color:var(--text-primary);margin:0;">${r.name}</p>
+            <span style="font-size:11px;color:var(--success);background:rgba(46,204,113,0.1);padding:2px 8px;border-radius:10px;border:1px solid rgba(46,204,113,0.2);">✓ Verified Purchase</span>
+          </div>
+          <div style="margin-top:4px;">${renderStars(r.rating)}</div>
+        </div>
+        <p style="color:var(--text-muted);font-size:13px;margin:0;">${formatDate(r.createdAt || new Date())}</p>
+      </div>
+      ${r.comment ? `<p style="color:var(--text-secondary);font-size:14px;margin-top:10px;line-height:1.6;margin-bottom:0;">${r.comment}</p>` : ''}
+    </div>
+  `).join('');
 }
 
 // ── Gallery Interactions ──────────────────────────────────────────
@@ -349,7 +553,7 @@ function initGalleryInteractions() {
     switchGalleryImage(currentImageIndex + 1);
   });
 
-  // Open Lightbox Zoom on main image click
+  // Open Lightbox Zoom
   mainBox?.addEventListener('click', () => {
     openLightbox(currentImageIndex);
   });
@@ -384,7 +588,8 @@ function switchGalleryImage(index) {
   if (mainImg) {
     mainImg.style.opacity = '0.3';
     setTimeout(() => {
-      mainImg.src = productImages[currentImageIndex] || mainImg.src;
+      const rawUrl = productImages[currentImageIndex] || mainImg.src;
+      mainImg.src = window.optimizeImageUrl ? window.optimizeImageUrl(rawUrl, 600) : rawUrl;
       mainImg.style.opacity = '1';
     }, 120);
   }
@@ -465,7 +670,8 @@ function switchLightboxImage(index) {
   if (lbImg) {
     lbImg.style.opacity = '0.3';
     setTimeout(() => {
-      lbImg.src = productImages[currentImageIndex];
+      const rawUrl = productImages[currentImageIndex];
+      lbImg.src = window.optimizeImageUrl ? window.optimizeImageUrl(rawUrl, 900) : rawUrl;
       lbImg.style.opacity = '1';
     }, 100);
   }
@@ -552,39 +758,7 @@ async function loadRelatedProducts(categoryId) {
   }
 }
 
-// ── Details Helpers & Cart Actions ────────────────────────────────
-
-function detailChip(label, value) {
-  return `
-    <div style="background:var(--black-soft);border:1px solid var(--black-border);border-radius:10px;padding:14px;">
-      <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${label}</p>
-      <p style="font-size:14px;font-weight:600;">${value}</p>
-    </div>`;
-}
-
-function scentNote(label, value) {
-  return `
-    <div style="background:var(--black-card);border:1px solid var(--black-border);padding:12px;border-radius:8px;">
-      <p style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${label}</p>
-      <p style="font-size:13px;color:var(--text-primary);">${value}</p>
-    </div>`;
-}
-
-function renderReviews(reviews) {
-  if (!reviews?.length) return `<p style="color:var(--text-muted);">No customer reviews yet. Be the first to review this perfume!</p>`;
-  return reviews.map(r => `
-    <div style="background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-        <div>
-          <p style="font-weight:600;font-size:15px;">${r.name}</p>
-          <div style="margin-top:2px;">${renderStars(r.rating)}</div>
-        </div>
-        <p style="color:var(--text-muted);font-size:13px;">${formatDate(r.createdAt)}</p>
-      </div>
-      ${r.comment ? `<p style="color:var(--text-secondary);font-size:14px;margin-top:10px;line-height:1.6;">${r.comment}</p>` : ''}
-    </div>
-  `).join('');
-}
+// ── Size & Quantity Helpers ───────────────────────────────────────
 
 let selectedSize = '100ml';
 
@@ -638,12 +812,16 @@ async function handleWishlist(id) {
     let wishlist = getWishlistIds();
     if (res.added) {
       wishlist.push(id);
-      btn.style.color = 'var(--gold)';
-      btn.textContent = '♥ In Wishlist';
+      if (btn) {
+        btn.style.color = 'var(--gold)';
+        btn.textContent = '♥ In Wishlist';
+      }
     } else {
       wishlist = wishlist.filter(w => w !== id);
-      btn.style.color = 'var(--text-secondary)';
-      btn.textContent = '♡ Add to Wishlist';
+      if (btn) {
+        btn.style.color = 'var(--text-secondary)';
+        btn.textContent = '♡ Add to Wishlist';
+      }
     }
     localStorage.setItem('ruxova_wishlist', JSON.stringify(wishlist));
     showToast(res.message, res.added ? 'success' : 'info');
@@ -655,4 +833,7 @@ async function handleWishlist(id) {
 window.selectRatingScore = selectRatingScore;
 window.submitReview       = submitReview;
 window.selectSize         = selectSize;
+window.changeQty          = changeQty;
+window.handleAddToCartDetail = handleAddToCartDetail;
 window.handleBuyNow       = handleBuyNow;
+window.handleWishlist     = handleWishlist;
