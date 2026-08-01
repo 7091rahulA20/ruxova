@@ -334,21 +334,41 @@ function renderProduct(p) {
         <!-- Volume Selection -->
         <div style="margin-bottom:24px;">
           <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Volume / Size:</label>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;" id="size-picker">
-            ${['50ml', '100ml', '200ml'].map(s => {
-              const isSelected = (p.volume || '100ml').toLowerCase().includes(s.toLowerCase()) || s === '100ml';
-              return `
-                <button
-                  type="button"
-                  class="size-opt-btn"
-                  data-size="${s}"
-                  onclick="selectSize('${s}')"
-                  style="padding:10px 22px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
-                >
-                  ${s}
-                </button>
-              `;
-            }).join('')}
+          <div style="display:flex;gap:10px;flex-wrap:wrap;" id="size-picker">
+            ${(() => {
+              const configuredVolumeStr = (p.volume || '100ml').trim();
+              const configuredVolumes = configuredVolumeStr.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+              const displaySizes = Array.from(new Set([...configuredVolumes, '25ml', '50ml', '100ml', '200ml']));
+              if (!selectedSize || !configuredVolumes.some(v => v.toLowerCase() === selectedSize.toLowerCase())) {
+                selectedSize = configuredVolumes[0] || '100ml';
+              }
+              return displaySizes.map(s => {
+                const isAvailable = configuredVolumes.some(v => v.toLowerCase() === s.toLowerCase());
+                const isSelected = selectedSize.toLowerCase() === s.toLowerCase();
+                if (isAvailable) {
+                  return `
+                    <button
+                      type="button"
+                      class="size-opt-btn"
+                      data-size="${s}"
+                      onclick="selectSize('${s}')"
+                      style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
+                    >
+                      ${s}
+                    </button>`;
+                } else {
+                  return `
+                    <button
+                      type="button"
+                      disabled
+                      style="padding:10px 14px;border-radius:8px;border:1px solid var(--black-border);background:rgba(255,255,255,0.02);color:var(--text-muted);font-weight:500;font-size:12px;cursor:not-allowed;opacity:0.45;"
+                      title="${s} is not available for this perfume"
+                    >
+                      ${s} <span style="font-size:10px;margin-left:2px;">(N/A)</span>
+                    </button>`;
+                }
+              }).join('');
+            })()}
           </div>
         </div>
 
