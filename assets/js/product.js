@@ -11,11 +11,50 @@ let currentZoom = 1;
 let selectedRating = 5;
 let storeSettings = { shippingCharge: 99, freeShippingThreshold: 999 };
 
+// Safe Helpers to guarantee zero JS crashes
+function safeIsInWishlist(id) {
+  try {
+    if (typeof window.isInWishlist === 'function') return window.isInWishlist(id);
+    if (typeof isInWishlist === 'function') return isInWishlist(id);
+    const w = JSON.parse(localStorage.getItem('ruxova_wishlist') || '[]');
+    return w.includes(id);
+  } catch (e) {
+    return false;
+  }
+}
+
+function safeFormatCurrency(amount) {
+  try {
+    if (typeof window.formatCurrency === 'function') return window.formatCurrency(amount);
+    if (typeof formatCurrency === 'function') return formatCurrency(amount);
+  } catch (e) {}
+  return `₹${Number(amount || 0).toLocaleString('en-IN')}`;
+}
+
+function safeRenderStars(rating) {
+  try {
+    if (typeof window.renderStars === 'function') return window.renderStars(rating);
+    if (typeof renderStars === 'function') return renderStars(rating);
+  } catch (e) {}
+  const r = Math.round(rating || 5);
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += i <= r ? '★' : '☆';
+  return `<span class="stars" style="color:var(--gold);">${s}</span>`;
+}
+
+function safeFormatDate(d) {
+  try {
+    if (typeof window.formatDate === 'function') return window.formatDate(d);
+    if (typeof formatDate === 'function') return formatDate(d);
+  } catch (e) {}
+  return new Date(d || Date.now()).toLocaleDateString('en-IN');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-  setActiveNavLink();
-  updateNavbarAuth();
-  updateCartBadge();
-  initMobileMenu();
+  if (typeof setActiveNavLink === 'function') setActiveNavLink();
+  if (typeof updateNavbarAuth === 'function') updateNavbarAuth();
+  if (typeof updateCartBadge === 'function') updateCartBadge();
+  if (typeof initMobileMenu === 'function') initMobileMenu();
 
   const productId = new URLSearchParams(window.location.search).get('id');
   if (!productId) {
@@ -37,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProduct(productId);
   initKeyboardNav();
   initLightboxControls();
-  hidePageLoader();
+  if (typeof hidePageLoader === 'function') hidePageLoader();
 });
 
 // ── Load Product ──────────────────────────────────────────────────
@@ -57,7 +96,7 @@ async function loadProduct(id) {
     if (!product) throw new Error('Product not found');
     currentProduct = product;
 
-    // Process images array
+    // Extract product images
     if (Array.isArray(product.images) && product.images.length > 0) {
       productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
     } else if (product.image) {
@@ -186,7 +225,7 @@ function preloadImages(urls) {
 // ── Render Product Layout ─────────────────────────────────────────
 
 function renderProduct(p) {
-  const wishlistActive = isInWishlist(p._id);
+  const wishlistActive = safeIsInWishlist(p._id);
   const discountPct = p.comparePrice && p.comparePrice > p.price
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
@@ -194,13 +233,22 @@ function renderProduct(p) {
   const avgRatingNum = p.avgRating || 0;
   const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
 
-  // Gallery thumbnails array
+  // Guarantee productImages is populated if empty
+  if (!productImages || productImages.length === 0) {
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      productImages = p.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
+    } else if (p.image) {
+      productImages = [typeof p.image === 'string' ? p.image : (p.image.url || 'assets/images/placeholder.jpg')];
+    } else {
+      productImages = ['assets/images/placeholder.jpg'];
+    }
+  }
+
   let thumbs = [...productImages];
-  if (thumbs.length === 0) thumbs = ['assets/images/placeholder.jpg'];
 
   const shippingText = storeSettings.freeShippingThreshold > 0 && p.price >= storeSettings.freeShippingThreshold
     ? '<span style="color:var(--success);font-weight:700;">FREE Delivery</span>'
-    : `<span style="color:var(--gold);">${formatCurrency(storeSettings.shippingCharge)}</span>`;
+    : `<span style="color:var(--gold);">${safeFormatCurrency(storeSettings.shippingCharge)}</span>`;
 
   document.getElementById('product-container').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;" class="product-layout fade-up">
@@ -267,7 +315,7 @@ function renderProduct(p) {
         <h1 style="font-family:var(--font-serif);font-size:clamp(26px,3.5vw,38px);font-weight:700;line-height:1.2;margin-bottom:12px;color:var(--text-primary);">${p.name}</h1>
 
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-          ${renderStars(avgRatingNum)}
+          ${safeRenderStars(avgRatingNum)}
           <span style="color:var(--text-secondary);font-size:14px;font-weight:600;">
             ${avgRatingNum > 0 ? avgRatingNum.toFixed(1) : '5.0'} (${numReviewsNum} customer review${numReviewsNum !== 1 ? 's' : ''})
           </span>
@@ -276,8 +324,8 @@ function renderProduct(p) {
         </div>
 
         <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;background:rgba(201,168,76,0.06);padding:14px 20px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);">
-          <span style="font-size:36px;font-weight:700;color:var(--gold);">${formatCurrency(p.price)}</span>
-          ${p.comparePrice ? `<span style="font-size:20px;text-decoration:line-through;color:var(--text-muted);">${formatCurrency(p.comparePrice)}</span>` : ''}
+          <span style="font-size:36px;font-weight:700;color:var(--gold);">${safeFormatCurrency(p.price)}</span>
+          ${p.comparePrice ? `<span style="font-size:20px;text-decoration:line-through;color:var(--text-muted);">${safeFormatCurrency(p.comparePrice)}</span>` : ''}
           ${discountPct ? `<span style="color:var(--success);font-weight:700;font-size:14px;">Save ${discountPct}%</span>` : ''}
         </div>
 
@@ -316,7 +364,7 @@ function renderProduct(p) {
             </div>
             <div>
               <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Free Shipping:</span>
-              <span style="color:var(--text-primary);">${storeSettings.freeShippingThreshold > 0 ? `Orders above ${formatCurrency(storeSettings.freeShippingThreshold)}` : 'On All Orders'}</span>
+              <span style="color:var(--text-primary);">${storeSettings.freeShippingThreshold > 0 ? `Orders above ${safeFormatCurrency(storeSettings.freeShippingThreshold)}` : 'On All Orders'}</span>
             </div>
             <div>
               <span style="color:var(--text-muted);display:block;margin-bottom:2px;">Estimated Delivery:</span>
@@ -398,7 +446,7 @@ function renderProduct(p) {
       <div style="display:grid;grid-template-columns:1fr 2fr;gap:32px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:28px;margin-bottom:32px;align-items:center;" class="review-breakdown-grid">
         <div style="text-align:center;border-right:1px solid var(--black-border);padding-right:24px;" class="rating-avg-box">
           <p style="font-size:52px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:8px;">${avgRatingNum > 0 ? avgRatingNum.toFixed(1) : '5.0'}</p>
-          <div style="margin-bottom:8px;">${renderStars(avgRatingNum)}</div>
+          <div style="margin-bottom:8px;">${safeRenderStars(avgRatingNum)}</div>
           <p style="color:var(--text-muted);font-size:14px;">Based on ${numReviewsNum} customer review${numReviewsNum !== 1 ? 's' : ''}</p>
         </div>
 
@@ -518,9 +566,9 @@ function renderReviewsList(reviews) {
             <p style="font-weight:600;font-size:15px;color:var(--text-primary);margin:0;">${r.name}</p>
             <span style="font-size:11px;color:var(--success);background:rgba(46,204,113,0.1);padding:2px 8px;border-radius:10px;border:1px solid rgba(46,204,113,0.2);">✓ Verified Purchase</span>
           </div>
-          <div style="margin-top:4px;">${renderStars(r.rating)}</div>
+          <div style="margin-top:4px;">${safeRenderStars(r.rating)}</div>
         </div>
-        <p style="color:var(--text-muted);font-size:13px;margin:0;">${formatDate(r.createdAt || new Date())}</p>
+        <p style="color:var(--text-muted);font-size:13px;margin:0;">${safeFormatDate(r.createdAt || new Date())}</p>
       </div>
       ${r.comment ? `<p style="color:var(--text-secondary);font-size:14px;margin-top:10px;line-height:1.6;margin-bottom:0;">${r.comment}</p>` : ''}
     </div>
@@ -712,9 +760,10 @@ function selectRatingScore(score) {
 
 async function submitReview(e) {
   e.preventDefault();
-  const user = getUser();
+  const user = typeof getUser === 'function' ? getUser() : null;
   if (!user) {
-    showToast('Please login to write a review', 'warning');
+    if (typeof showToast === 'function') showToast('Please login to write a review', 'warning');
+    else alert('Please login to write a review');
     return;
   }
 
@@ -726,10 +775,10 @@ async function submitReview(e) {
       rating: selectedRating,
       comment
     });
-    showToast(res.message || 'Review submitted successfully!', 'success');
+    if (typeof showToast === 'function') showToast(res.message || 'Review submitted successfully!', 'success');
     await loadProduct(currentProduct._id);
   } catch (err) {
-    showToast(err.message || 'Failed to submit review', 'error');
+    if (typeof showToast === 'function') showToast(err.message || 'Failed to submit review', 'error');
   }
 }
 
@@ -780,36 +829,37 @@ function selectSize(size) {
 let qty = 1;
 function changeQty(delta) {
   qty = Math.max(1, qty + delta);
-  document.getElementById('qty-display').textContent = qty;
+  const qtyEl = document.getElementById('qty-display');
+  if (qtyEl) qtyEl.textContent = qty;
 }
 
 function handleAddToCartDetail() {
   if (!currentProduct) return;
   for (let i = 0; i < qty; i++) {
-    addToCart(currentProduct, 1);
+    if (typeof addToCart === 'function') addToCart(currentProduct, 1);
   }
-  showToast(`${qty} × ${currentProduct.name} (${selectedSize}) added to cart!`, 'success');
+  if (typeof showToast === 'function') showToast(`${qty} × ${currentProduct.name} (${selectedSize}) added to cart!`, 'success');
 }
 
 function handleBuyNow(e) {
   if (e) e.preventDefault();
   if (!currentProduct) return;
   for (let i = 0; i < qty; i++) {
-    addToCart(currentProduct, 1);
+    if (typeof addToCart === 'function') addToCart(currentProduct, 1);
   }
   window.location.href = 'checkout.html';
 }
 
 async function handleWishlist(id) {
-  const user = getUser();
+  const user = typeof getUser === 'function' ? getUser() : null;
   if (!user) {
-    showToast('Please login to use wishlist', 'warning');
+    if (typeof showToast === 'function') showToast('Please login to use wishlist', 'warning');
     return;
   }
   try {
     const res = await api.put(`/users/wishlist/${id}`);
     const btn  = document.getElementById('wishlist-btn');
-    let wishlist = getWishlistIds();
+    let wishlist = typeof getWishlistIds === 'function' ? getWishlistIds() : [];
     if (res.added) {
       wishlist.push(id);
       if (btn) {
@@ -824,9 +874,9 @@ async function handleWishlist(id) {
       }
     }
     localStorage.setItem('ruxova_wishlist', JSON.stringify(wishlist));
-    showToast(res.message, res.added ? 'success' : 'info');
+    if (typeof showToast === 'function') showToast(res.message, res.added ? 'success' : 'info');
   } catch {
-    showToast('Please login to use wishlist', 'warning');
+    if (typeof showToast === 'function') showToast('Please login to use wishlist', 'warning');
   }
 }
 
