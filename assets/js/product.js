@@ -251,7 +251,7 @@ function renderProduct(p) {
     : `<span style="color:var(--gold);">${safeFormatCurrency(storeSettings.shippingCharge)}</span>`;
 
   document.getElementById('product-container').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;" class="product-layout fade-up">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;" class="product-layout fade-up visible">
 
       <!-- Gallery Column -->
       <div>
@@ -488,6 +488,7 @@ function renderProduct(p) {
   `;
 
   initGalleryInteractions();
+  if (typeof initFadeUp === 'function') initFadeUp();
 }
 
 // ── Rating Breakdown Calculation ──────────────────────────────────
