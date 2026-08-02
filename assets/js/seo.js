@@ -57,8 +57,9 @@
       'name': BRAND_NAME,
       'legalName': 'RUXOVA PERFUMES India',
       'url': BASE_URL,
-      'logo': `${BASE_URL}/assets/images/hero.jpg`,
-      'description': 'RUXOVA PERFUMES is a premier luxury fragrance house in India specializing in long-lasting Eau De Parfum for men and women.',
+      'logo': `${BASE_URL}/assets/images/ruxova-luxury-perfume-brand-logo.jpg`,
+      'image': `${BASE_URL}/assets/images/ruxova-perfumes-logo.png`,
+      'description': 'RUXOVA PERFUMES — Scent That Defines You. Premier luxury fragrance house in India specializing in long-lasting Eau De Parfum for men and women.',
       'contactPoint': {
         '@type': 'ContactPoint',
         'telephone': '+91-7808763348',
