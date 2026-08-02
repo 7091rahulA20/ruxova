@@ -69,7 +69,7 @@
         'availableLanguage': ['English', 'Hindi']
       },
       'sameAs': [
-        'https://instagram.com',
+        'https://www.instagram.com/ruxov.a?igsh=MWF5YnUyaGtwZWUycg==',
         'https://facebook.com',
         'https://x.com'
       ]
