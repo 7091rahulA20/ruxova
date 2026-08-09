@@ -296,6 +296,58 @@ function initScreenshotPreview() {
   });
 }
 
+// ── Silent Guest Token Generator ──────────────────────────────────
+
+async function ensureGuestToken(name, email, phone) {
+  if (typeof getToken === 'function' && getToken()) return true;
+
+  const cleanPhone = (phone || '').replace(/\D/g, '') || String(Date.now());
+  const guestEmail = email || `guest_${cleanPhone}@ruxova.com`;
+  const guestName  = name || 'Guest Customer';
+  const guestPassword = `RuxovaGuest#${cleanPhone}`;
+
+  try {
+    const res = await api.post('/auth/register', {
+      name: guestName,
+      email: guestEmail,
+      phone: phone || cleanPhone,
+      password: guestPassword,
+    });
+    if (res.token) {
+      setAuth(res.token, res.user);
+      return true;
+    }
+  } catch (regErr) {
+    try {
+      const res = await api.post('/auth/login', {
+        email: guestEmail,
+        password: guestPassword,
+      });
+      if (res.token) {
+        setAuth(res.token, res.user);
+        return true;
+      }
+    } catch (loginErr) {
+      try {
+        const fallbackEmail = `guest_${Date.now()}@ruxova.com`;
+        const res = await api.post('/auth/register', {
+          name: guestName,
+          email: fallbackEmail,
+          phone: phone || cleanPhone,
+          password: guestPassword,
+        });
+        if (res.token) {
+          setAuth(res.token, res.user);
+          return true;
+        }
+      } catch (e) {
+        console.error('Guest authentication error:', e);
+      }
+    }
+  }
+  return false;
+}
+
 // ── Form Submit ─────────────────────────────────────────────────
 
 function initCheckoutForm() {
@@ -340,6 +392,9 @@ function initCheckoutForm() {
         showToast('Please fill in all required address fields', 'warning');
         return;
       }
+
+      // Ensure JWT token is silently generated so backend accepts order
+      await ensureGuestToken(shippingAddress.name, shippingAddress.email, shippingAddress.phone);
 
       const couponCodeInput = document.getElementById('coupon-input')?.value?.trim()?.toUpperCase() || '';
       const activeRefCode   = appliedCoupon?.code || getStoredRefCode() || couponCodeInput;
