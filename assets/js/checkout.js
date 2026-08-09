@@ -9,7 +9,6 @@ let storeSettings = { shippingCharge: 99, freeShippingThreshold: 999 };
 let appliedCoupon = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!requireAuth()) return;
   setActiveNavLink();
   updateNavbarAuth();
   updateCartBadge();

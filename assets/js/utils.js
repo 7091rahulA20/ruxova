@@ -303,11 +303,7 @@ function setActiveNavLink() {
 // ── Auth Guard ───────────────────────────────────────────────────
 
 function requireAuth() {
-  const user = getUser();
-  if (!user || !getToken()) {
-    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
-    return false;
-  }
+  // Guest checkout is enabled for all customers
   return true;
 }
 
@@ -331,10 +327,7 @@ function updateNavbarAuth() {
       setTimeout(() => window.location.href = 'index.html', 800);
     });
   } else {
-    authLinks.innerHTML = `
-      <a href="login.html">Login</a>
-      <a href="register.html" class="btn btn-gold btn-sm">Register</a>
-    `;
+    authLinks.innerHTML = '';
   }
 }
 
