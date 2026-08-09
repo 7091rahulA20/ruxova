@@ -1,7 +1,7 @@
 /* ================================================================
    RUXOVA PERFUMES — Master Technical & On-Page SEO Engine
    Structured Data (JSON-LD), Google Images SEO, Resource Hints,
-   Open Graph, Twitter Cards, Breadcrumbs, FAQ Schema, SearchAction.
+   Open Graph, Twitter Cards, Breadcrumbs, FAQ Schema, SearchAction, ImageObject Schema.
    ================================================================ */
 
 (function () {
@@ -15,6 +15,7 @@
     injectOrganizationSchema();
     injectSearchActionSchema();
     injectBreadcrumbsSchema();
+    injectImageGallerySchema();
     optimizeImageAttributes();
   });
 
@@ -57,7 +58,7 @@
       'name': BRAND_NAME,
       'legalName': 'RUXOVA PERFUMES India',
       'url': BASE_URL,
-      'logo': `${BASE_URL}/assets/images/ruxova-luxury-perfume-brand-logo.jpg`,
+      'logo': `${BASE_URL}/assets/images/ruxova-luxury-perfume-brand-logo.png`,
       'image': `${BASE_URL}/assets/images/ruxova-perfumes-logo.png`,
       'description': 'RUXOVA PERFUMES — Scent That Defines You. Premier luxury fragrance house in India specializing in long-lasting Eau De Parfum for men and women.',
       'contactPoint': {
@@ -169,23 +170,102 @@
   }
 
   /**
-   * 5. Automated Google Images SEO & Accessibility Helper
+   * 5. Google Image Search Schema (ImageObject) Injection
+   */
+  function injectImageGallerySchema() {
+    if (document.getElementById('json-ld-images')) return;
+
+    const imagesToRank = [
+      {
+        name: 'RUXOVA Oud Royal Luxury Perfume',
+        url: `${BASE_URL}/assets/images/ruxova-oud-royal-luxury-perfume.png`,
+        caption: 'Long lasting luxury Oud Royal EDP fragrance by RUXOVA PERFUMES'
+      },
+      {
+        name: 'RUXOVA Velvet Rose Eau De Parfum',
+        url: `${BASE_URL}/assets/images/ruxova-velvet-rose-eau-de-parfum.png`,
+        caption: 'Elegant French Velvet Rose EDP fragrance by RUXOVA PERFUMES'
+      },
+      {
+        name: 'RUXOVA Golden Amber Long Lasting Perfume',
+        url: `${BASE_URL}/assets/images/ruxova-golden-amber-long-lasting-perfume.png`,
+        caption: 'Premium Golden Amber long lasting EDP perfume by RUXOVA PERFUMES'
+      },
+      {
+        name: 'RUXOVA Black Orchid Unisex Perfume',
+        url: `${BASE_URL}/assets/images/ruxova-black-orchid-unisex-perfume.png`,
+        caption: 'Exotic Black Orchid Eau De Parfum by RUXOVA PERFUMES'
+      },
+      {
+        name: 'RUXOVA Ocean Breeze Fresh Perfume',
+        url: `${BASE_URL}/assets/images/ruxova-ocean-breeze-fresh-perfume.png`,
+        caption: 'Refreshing Ocean Breeze EDP perfume for men and women'
+      },
+      {
+        name: 'RUXOVA French Vanilla Luxury Fragrance',
+        url: `${BASE_URL}/assets/images/ruxova-french-vanilla-luxury-fragrance.png`,
+        caption: 'Sweet French Vanilla long lasting perfume by RUXOVA PERFUMES'
+      },
+      {
+        name: 'RUXOVA Luxury Perfumes Banner',
+        url: `${BASE_URL}/assets/images/ruxova-luxury-perfumes-hero.png`,
+        caption: 'Luxury Perfumes Collection RUXOVA PERFUMES'
+      }
+    ];
+
+    const schemaData = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      'name': 'RUXOVA Luxury Perfume Image Gallery',
+      'itemListElement': imagesToRank.map((img, index) => ({
+        '@type': 'ListItem',
+        'position': index + 1,
+        'item': {
+          '@type': 'ImageObject',
+          'name': img.name,
+          'contentUrl': img.url,
+          'url': img.url,
+          'caption': img.caption,
+          'creditText': 'RUXOVA PERFUMES',
+          'creator': {
+            '@type': 'Organization',
+            'name': BRAND_NAME
+          }
+        }
+      }))
+    };
+
+    const script = document.createElement('script');
+    script.id = 'json-ld-images';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(schemaData);
+    document.head.appendChild(script);
+  }
+
+  /**
+   * 6. Automated Google Images SEO & Accessibility Helper
    */
   function optimizeImageAttributes() {
-    const observer = new MutationObserver(() => {
+    const processImages = () => {
       document.querySelectorAll('img').forEach(img => {
-        if (!img.getAttribute('alt') || img.getAttribute('alt') === '') {
-          img.setAttribute('alt', `RUXOVA Luxury Perfume Fragrance`);
+        if (!img.getAttribute('alt') || img.getAttribute('alt').trim() === '') {
+          img.setAttribute('alt', `RUXOVA Luxury Perfume Fragrance — Scent That Defines You`);
+        }
+        if (!img.getAttribute('title')) {
+          img.setAttribute('title', img.getAttribute('alt'));
         }
         if (img.classList.contains('hero-img') || img.id === 'main-image') {
           img.setAttribute('loading', 'eager');
           img.setAttribute('fetchpriority', 'high');
         } else if (!img.hasAttribute('loading')) {
           img.setAttribute('loading', 'lazy');
+          img.setAttribute('decoding', 'async');
         }
       });
-    });
+    };
 
+    processImages();
+    const observer = new MutationObserver(processImages);
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 
@@ -195,6 +275,7 @@
     injectOrganizationSchema,
     injectSearchActionSchema,
     injectBreadcrumbsSchema,
+    injectImageGallerySchema,
     optimizeImageAttributes
   };
 

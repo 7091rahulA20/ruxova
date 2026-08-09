@@ -56,11 +56,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (typeof updateCartBadge === 'function') updateCartBadge();
   if (typeof initMobileMenu === 'function') initMobileMenu();
 
-  const productId = new URLSearchParams(window.location.search).get('id');
-  if (!productId) {
-    window.location.href = 'shop.html';
-    return;
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+  const searchQuery = urlParams.get('name') || urlParams.get('search') || urlParams.get('slug');
 
   // Fetch settings for dynamic delivery info
   try {
@@ -73,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   } catch (e) {}
 
-  await loadProduct(productId);
+  await loadProduct(productId, searchQuery);
   initKeyboardNav();
   initLightboxControls();
   if (typeof hidePageLoader === 'function') hidePageLoader();
@@ -81,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Load Product ──────────────────────────────────────────────────
 
-async function loadProduct(id) {
+async function loadProduct(id, searchQuery = null) {
   const container = document.getElementById('product-container');
   if (!container) return;
 
@@ -92,17 +90,43 @@ async function loadProduct(id) {
     </div>`;
 
   try {
-    const { product } = await api.get(`/products/${id}`);
+    let product = null;
+
+    // 1. Try to fetch product by ID if present
+    if (id) {
+      try {
+        const res = await api.get(`/products/${id}`);
+        product = res.product;
+      } catch (e) {
+        console.warn(`Product ID ${id} fetch failed, falling back to search/featured products.`);
+      }
+    }
+
+    // 2. Fallback: Search or load top products if ID was missing or invalid
+    if (!product) {
+      const endpoint = searchQuery ? `/products?search=${encodeURIComponent(searchQuery)}` : '/products?limit=1';
+      const res = await api.get(endpoint);
+      const list = res.products || [];
+      if (list.length > 0) {
+        product = list[0];
+        // Update URL state without page refresh so canonical matches
+        if (history.replaceState) {
+          history.replaceState(null, '', `product.html?id=${product._id}`);
+        }
+      }
+    }
+
     if (!product) throw new Error('Product not found');
     currentProduct = product;
 
-    // Extract product images
+    // Extract product images safely (handles both string URLs and object image format)
+    const fallbackImage = 'assets/images/ruxova-perfumes-logo.png';
     if (Array.isArray(product.images) && product.images.length > 0) {
-      productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
+      productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || img.src || fallbackImage));
     } else if (product.image) {
-      productImages = [typeof product.image === 'string' ? product.image : (product.image.url || 'assets/images/placeholder.jpg')];
+      productImages = [typeof product.image === 'string' ? product.image : (product.image.url || product.image.src || fallbackImage)];
     } else {
-      productImages = ['assets/images/placeholder.jpg'];
+      productImages = [fallbackImage];
     }
 
     currentImageIndex = 0;
@@ -132,7 +156,7 @@ async function loadProduct(id) {
     container.innerHTML = `
       <div style="text-align:center;padding:80px 20px;">
         <p style="color:var(--error);font-size:18px;margin-bottom:16px;">${err.message || 'Product not found'}</p>
-        <a href="shop.html" class="btn btn-gold btn-lg">Return to Shop</a>
+        <a href="shop.html" class="btn btn-gold btn-lg">Browse All Perfumes</a>
       </div>`;
   }
 }
@@ -152,6 +176,15 @@ function updateDynamicSeo({ title, description, keywords, image, url, product })
     document.head.appendChild(metaKw);
   }
   metaKw.setAttribute('content', keywords);
+
+  // Update Canonical URL dynamically per product
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (!canonicalEl) {
+    canonicalEl = document.createElement('link');
+    canonicalEl.rel = 'canonical';
+    document.head.appendChild(canonicalEl);
+  }
+  canonicalEl.setAttribute('href', url);
 
   // Open Graph
   const ogTags = [
@@ -234,13 +267,14 @@ function renderProduct(p) {
   const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
 
   // Guarantee productImages is populated if empty
+  const fallbackImg = 'assets/images/ruxova-perfumes-logo.png';
   if (!productImages || productImages.length === 0) {
     if (Array.isArray(p.images) && p.images.length > 0) {
-      productImages = p.images.map(img => typeof img === 'string' ? img : (img.url || 'assets/images/placeholder.jpg'));
+      productImages = p.images.map(img => typeof img === 'string' ? img : (img.url || img.src || fallbackImg));
     } else if (p.image) {
-      productImages = [typeof p.image === 'string' ? p.image : (p.image.url || 'assets/images/placeholder.jpg')];
+      productImages = [typeof p.image === 'string' ? p.image : (p.image.url || p.image.src || fallbackImg)];
     } else {
-      productImages = ['assets/images/placeholder.jpg'];
+      productImages = [fallbackImg];
     }
   }
 

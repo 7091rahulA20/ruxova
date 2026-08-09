@@ -156,7 +156,13 @@ function renderProductCard(p) {
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
 
-  const rawImageUrl = p.images?.[0]?.url || 'assets/images/placeholder.jpg';
+  let rawImageUrl = 'assets/images/ruxova-perfumes-logo.png';
+  if (Array.isArray(p.images) && p.images.length > 0) {
+    const first = p.images[0];
+    rawImageUrl = typeof first === 'string' ? first : (first.url || first.src || rawImageUrl);
+  } else if (p.image) {
+    rawImageUrl = typeof p.image === 'string' ? p.image : (p.image.url || p.image.src || rawImageUrl);
+  }
   const imageUrl = window.optimizeImageUrl ? window.optimizeImageUrl(rawImageUrl, 500) : rawImageUrl;
 
   return `
@@ -169,8 +175,10 @@ function renderProductCard(p) {
         <img
           class="product-img"
           src="${imageUrl}"
-          alt="${p.name}"
+          alt="${p.name} — RUXOVA Luxury Perfume"
+          title="${p.name} — RUXOVA Luxury Perfume"
           loading="lazy"
+          decoding="async"
         >
         ${discountPct ? `<span class="badge">${discountPct}% OFF</span>` : ''}
         <button

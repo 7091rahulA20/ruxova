@@ -5,4 +5,8 @@ Disallow: /checkout.html
 Disallow: /order-success.html
 Disallow: /orders.html
 
+User-agent: Googlebot-Image
+Allow: /assets/
+Allow: /assets/images/
+
 Sitemap: https://ruxova.vercel.app/sitemap.xml
