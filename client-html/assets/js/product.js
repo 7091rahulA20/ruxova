@@ -931,20 +931,56 @@ function changeQty(delta) {
 }
 
 function handleAddToCartDetail() {
-  if (!currentProduct) return;
-  for (let i = 0; i < qty; i++) {
-    if (typeof addToCart === 'function') addToCart(currentProduct, 1);
+  try {
+    const prodToAdd = currentProduct || (window.getProductConfig ? window.getProductConfig('ruxova-premium') : null);
+    if (!prodToAdd) return;
+    const itemSize = typeof selectedSize !== 'undefined' && selectedSize ? selectedSize : '50ml';
+    const count = typeof qty !== 'undefined' && Number(qty) > 0 ? Number(qty) : 1;
+    if (typeof addToCart === 'function') {
+      addToCart(prodToAdd, count, itemSize);
+    }
+  } catch (err) {
+    console.error('Error adding to cart:', err);
   }
-  if (typeof showToast === 'function') showToast(`${qty} × ${currentProduct.name} (${selectedSize}) added to cart!`, 'success');
 }
 
 function handleBuyNow(e) {
-  if (e) e.preventDefault();
-  if (!currentProduct) return;
-  for (let i = 0; i < qty; i++) {
-    if (typeof addToCart === 'function') addToCart(currentProduct, 1);
+  if (e && e.preventDefault) e.preventDefault();
+
+  const btn = e && e.currentTarget ? e.currentTarget : document.getElementById('buy-now-btn');
+  const originalText = btn ? btn.innerHTML : '⚡ Order Now';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Redirecting to Checkout...';
   }
-  window.location.href = 'checkout.html';
+
+  try {
+    const prodToBuy = currentProduct || (window.getProductConfig ? window.getProductConfig('ruxova-premium') : {
+      _id: 'ruxova-premium',
+      productId: 'ruxova-premium',
+      name: 'RUXOVA Premium Eau De Parfum'
+    });
+
+    const itemSize = typeof selectedSize !== 'undefined' && selectedSize ? selectedSize : '50ml';
+    const count = typeof qty !== 'undefined' && Number(qty) > 0 ? Number(qty) : 1;
+
+    if (typeof addToCart === 'function') {
+      addToCart(prodToBuy, count, itemSize);
+    }
+
+    window.location.href = 'checkout.html';
+  } catch (err) {
+    console.error('Error during Buy Now:', err);
+    window.location.href = 'checkout.html';
+  } finally {
+    setTimeout(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }, 2000);
+  }
 }
 
 async function handleWishlist(id) {

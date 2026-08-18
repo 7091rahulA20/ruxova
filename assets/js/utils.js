@@ -213,14 +213,31 @@ function renderProductCard(p) {
             type="button"
             class="btn btn-outline-gold btn-view-prod"
             style="padding:10px 14px;"
-            onclick="window.location.href='product.html?id=${p._id}';"
+            onclick="event.stopPropagation(); handleQuickBuy('${p._id}', '${p.volume || '50ml'}')"
           >
-            Order Now
+            ⚡ Order Now
           </button>
         </div>
       </div>
     </div>
   `;
+}
+
+function handleQuickBuy(productId, size = '50ml') {
+  try {
+    const config = window.getProductConfig ? window.getProductConfig(productId) : null;
+    const prodObj = config || {
+      _id: productId || 'ruxova-premium',
+      productId: productId || 'ruxova-premium',
+      name: 'RUXOVA Premium Eau De Parfum',
+    };
+    if (typeof addToCart === 'function') {
+      addToCart(prodObj, 1, size);
+    }
+  } catch (e) {
+    console.error('Quick Buy error:', e);
+  }
+  window.location.href = 'checkout.html';
 }
 
 function renderSkeletons(count) {
@@ -593,6 +610,7 @@ window.escHtml                 = escHtml;
 window.renderProductCard       = renderProductCard;
 window.renderSkeletons         = renderSkeletons;
 window.handleAddToCart         = handleAddToCart;
+window.handleQuickBuy          = handleQuickBuy;
 window.attachCartListeners     = attachCartListeners;
 window.attachWishlistListeners = attachWishlistListeners;
 window.setActiveNavLink        = setActiveNavLink;
