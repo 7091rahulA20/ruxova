@@ -42,6 +42,44 @@
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Hero Image Brightness & Desktop Fitting Enhancements */
+    .hero {
+      background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg');
+      background-size: cover;
+      background-position: center 30%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      filter: brightness(1.08) contrast(1.04);
+    }
+    
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%);
+      pointer-events: none;
+    }
+
+    @media (min-width: 992px) {
+      .hero {
+        background-size: cover;
+        background-position: center center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        background-size: cover;
+        background-position: center center;
+        filter: brightness(1.15) contrast(1.05);
+      }
+      .hero-overlay {
+        background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.65) 100%) !important;
+      }
+    }
+  </style>
 
   <!-- Organization & WebSite JSON-LD Schema -->
   <script type="application/ld+json">
@@ -189,9 +227,9 @@
 <!-- ══════════════════════════════════════════════
      HERO SECTION
 ══════════════════════════════════════════════ -->
-<section class="hero" id="hero" aria-label="Hero Banner" style="background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg'); background-size: cover; background-position: center; min-height: 100vh; display: flex; align-items: center; position: relative;">
-  <!-- Overlay for better text readability -->
-  <div class="hero-overlay" style="position:absolute; inset:0; background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);"></div>
+<section class="hero" id="hero" aria-label="Hero Banner">
+  <!-- Overlay for high brightness & text contrast -->
+  <div class="hero-overlay"></div>
 
   <div style="position:relative; z-index:1; max-width:1200px; width: 100%; margin: 0 auto; padding: 0 24px; text-align: left;">
     <p class="hero-subtitle hero-subtitle-top" style="font-size:16px;letter-spacing:4px;text-transform:uppercase;color:#fff;margin-bottom:10px; font-weight: 300;">
