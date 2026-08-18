@@ -43,40 +43,47 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    /* Hero Image Brightness & Desktop Fitting Enhancements */
+    /* Hero Image Brightness & Desktop Face Alignment Fix */
     .hero {
       background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg');
       background-size: cover;
-      background-position: center 30%;
-      min-height: 100vh;
+      background-position: center top;
+      min-height: 90vh;
       display: flex;
       align-items: center;
       position: relative;
-      filter: brightness(1.08) contrast(1.04);
+      filter: brightness(1.12) contrast(1.03);
     }
     
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%);
+      background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0) 100%);
       pointer-events: none;
+    }
+
+    /* Text drop shadow for high contrast without dimming model image */
+    .hero-title-main, .hero-subtitle, .hero-btn-container, .hero-feature-item {
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
     }
 
     @media (min-width: 992px) {
       .hero {
         background-size: cover;
-        background-position: center center;
+        background-position: center top !important; /* Keep model face & head 100% in view */
+        min-height: 92vh;
       }
     }
 
     @media (max-width: 768px) {
       .hero {
         background-size: cover;
-        background-position: center center;
-        filter: brightness(1.15) contrast(1.05);
+        background-position: center top !important;
+        filter: brightness(1.25) contrast(1.05); /* High brightness boost for mobile screens */
+        min-height: 85vh;
       }
       .hero-overlay {
-        background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.65) 100%) !important;
+        background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.7) 100%) !important;
       }
     }
   </style>
