@@ -420,11 +420,6 @@ function initCheckoutForm() {
       formData.append('totalAmount',     window._checkoutTotal);
       formData.append('shippingCharge',  window._checkoutShipping);
       formData.append('discount',        window._checkoutDiscount || 0);
-      formData.append('shippingAddress', JSON.stringify(shippingAddress));
-      formData.append('paymentMethod',   paymentMethod);
-      formData.append('totalAmount',     window._checkoutTotal);
-      formData.append('shippingCharge',  window._checkoutShipping);
-      formData.append('discount',        window._checkoutDiscount || 0);
 
       if (activeRefCode) {
         formData.append('couponCode',     activeRefCode);
