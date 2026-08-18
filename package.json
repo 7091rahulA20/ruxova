@@ -4,7 +4,7 @@
   "private": true,
   "description": "RUXOVA Perfumes Luxury E-Commerce Frontend",
   "scripts": {
-    "build": "echo 'RUXOVA Static Site Ready'",
-    "start": "npx serve ."
+    "build": "node build.js",
+    "start": "npx serve dist"
   }
 }
