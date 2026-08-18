@@ -45,9 +45,10 @@
   <style>
     /* Hero Image Sizing & Desktop Alignment */
     .hero {
+      background-color: #0d0d0d;
       background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg');
       background-size: cover;
-      background-position: center center;
+      background-position: center 20%;
       min-height: 90vh;
       display: flex;
       align-items: center;
@@ -57,26 +58,32 @@
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+      background: linear-gradient(to right, rgba(13,13,13,0.85) 0%, rgba(13,13,13,0.45) 50%, rgba(13,13,13,0.1) 100%);
       pointer-events: none;
     }
 
     @media (min-width: 992px) {
       .hero {
-        background-size: cover;
-        background-position: center center;
-        min-height: 92vh;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: right center !important;
+        background-color: #080808;
+        min-height: 88vh;
+      }
+      .hero-overlay {
+        background: linear-gradient(to right, #080808 0%, rgba(8,8,8,0.8) 40%, rgba(8,8,8,0) 80%) !important;
       }
     }
 
     @media (max-width: 768px) {
       .hero {
-        background-size: cover;
-        background-position: 70% center;
+        background-size: cover !important;
+        background-position: center 15% !important;
+        filter: brightness(1.2) contrast(1.05) !important;
         min-height: 85vh;
       }
       .hero-overlay {
-        background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.8) 100%) !important;
+        background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.75) 100%) !important;
       }
     }
   </style>
