@@ -208,7 +208,7 @@
       },
       {
         name: 'RUXOVA Luxury Perfumes Banner',
-        url: `${BASE_URL}/assets/images/ruxova-luxury-perfumes-hero.png`,
+        url: `${BASE_URL}/assets/images/ruxova-luxury-perfumes-hero.jpeg`,
         caption: 'Luxury Perfumes Collection RUXOVA PERFUMES'
       }
     ];
