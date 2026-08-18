@@ -340,28 +340,6 @@ function renderProduct(p) {
             <span>Image <span id="img-index-display">${currentImageIndex + 1}</span> of ${thumbs.length}</span>
           </div>
         </div>
-      </div>;padding:6px 12px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px;">
-            <span>🔍 Click to Zoom</span>
-            <span>•</span>
-            <span>Image <span id="img-index-display">1</span> of ${thumbs.length}</span>
-          </div>
-        </div>
-
-        <!-- Thumbnails Gallery Row -->
-        <div style="display:flex;gap:12px;margin-top:16px;overflow-x:auto;padding-bottom:6px;" id="thumb-row">
-          ${thumbs.map((imgUrl, i) => `
-            <div style="position:relative;flex-shrink:0;">
-              <img
-                src="${window.optimizeImageUrl ? window.optimizeImageUrl(imgUrl, 150) : imgUrl}"
-                alt="${p.name} Thumbnail ${i + 1}"
-                data-index="${i}"
-                class="thumb-img ${i === 0 ? 'active' : ''}"
-                loading="lazy"
-                style="width:76px;height:76px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid ${i === 0 ? 'var(--gold)' : 'var(--black-border)'};transition:all 0.2s;"
-              >
-            </div>
-          `).join('')}
-        </div>
 
         <!-- Product Guarantee Badges Section -->
         <div style="margin-top:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;">
