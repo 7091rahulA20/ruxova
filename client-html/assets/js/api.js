@@ -48,13 +48,25 @@ function optimizeImageUrl(url, width = 500) {
   return url;
 }
 
+const apiCache = new Map();
+
 /**
- * Core API request helper
+ * Core API request helper with high-performance GET caching
  * @param {string} endpoint - e.g. '/products'
  * @param {object} options  - fetch options
  * @param {boolean} isFormData - if true, don't set Content-Type (let browser set multipart)
  */
 async function apiRequest(endpoint, options = {}, isFormData = false) {
+  const isGet = !options.method || options.method === 'GET';
+
+  // Return cached response instantly for GET requests if fresh (< 3 minutes)
+  if (isGet && apiCache.has(endpoint)) {
+    const cached = apiCache.get(endpoint);
+    if (Date.now() - cached.timestamp < 180000) {
+      return cached.data;
+    }
+  }
+
   const token = getToken();
 
   const headers = { ...options.headers };
@@ -76,6 +88,10 @@ async function apiRequest(endpoint, options = {}, isFormData = false) {
 
   if (!res.ok) {
     throw new Error(data.message || 'Request failed');
+  }
+
+  if (isGet) {
+    apiCache.set(endpoint, { data, timestamp: Date.now() });
   }
 
   return data;

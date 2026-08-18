@@ -60,16 +60,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const productId = urlParams.get('id');
   const searchQuery = urlParams.get('name') || urlParams.get('search') || urlParams.get('slug');
 
-  // Fetch settings for dynamic delivery info
-  try {
-    const res = await api.get('/settings');
-    if (res.settings) {
+  // Non-blocking asynchronous settings fetch
+  api.get('/settings').then(res => {
+    if (res && res.settings) {
       storeSettings = {
         shippingCharge: Number(res.settings.shippingCharge ?? 99),
         freeShippingThreshold: Number(res.settings.freeShippingThreshold ?? 999),
       };
     }
-  } catch (e) {}
+  }).catch(() => {});
 
   await loadProduct(productId, searchQuery);
   initKeyboardNav();
@@ -973,7 +972,7 @@ function handleBuyNow(e) {
 
   try {
     if (typeof addToCart === 'function') {
-      addToCart(prodToBuy, count, itemSize);
+      addToCart(prodToBuy, count, itemSize, true);
     } else {
       const cartKey = 'ruxova_cart';
       const cart = JSON.parse(localStorage.getItem(cartKey) || '[]');

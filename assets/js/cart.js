@@ -18,7 +18,7 @@ function saveCart(cart) {
   updateCartBadge();
 }
 
-function addToCart(product, quantity = 1, size = null) {
+function addToCart(product, quantity = 1, size = null, silent = false) {
   const cart = getCart();
   const prodId = product.productId || product._id || 'ruxova-premium';
   const itemSize = (size || product.size || (typeof selectedSize !== 'undefined' ? selectedSize : '50ml')).toString();
@@ -41,7 +41,7 @@ function addToCart(product, quantity = 1, size = null) {
 
   if (existingIndex > -1) {
     cart[existingIndex].quantity += quantity;
-    if (typeof showToast === 'function') {
+    if (!silent && typeof showToast === 'function') {
       showToast(`${prodName} (${itemSize}) quantity updated in cart`, 'info');
     }
   } else {
@@ -53,9 +53,10 @@ function addToCart(product, quantity = 1, size = null) {
       size:        itemSize,
       price:       itemPrice,
       quantity,
+      images:      product.images || []
     });
-    if (typeof showToast === 'function') {
-      showToast(`${prodName} (${itemSize}) added to cart 🛒`, 'success');
+    if (!silent && typeof showToast === 'function') {
+      showToast(`${prodName} (${itemSize}) added to cart`, 'success');
     }
   }
 
