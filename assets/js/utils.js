@@ -121,13 +121,29 @@ function initFadeUp() {
 
 // ── Cart Count Badge ─────────────────────────────────────────────
 
+function goToProduct(id) {
+  const safeId = encodeURIComponent(id || 'ruxova-premium');
+  window.location.href = `product.html?id=${safeId}`;
+}
+
 function updateCartBadge() {
-  const cart  = getCart();
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const badges = document.querySelectorAll('.cart-count');
+  let count = 0;
+  try {
+    const raw = localStorage.getItem('ruxova_cart');
+    if (raw) {
+      const cart = JSON.parse(raw);
+      if (Array.isArray(cart)) {
+        count = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+      }
+    }
+  } catch (e) {
+    count = 0;
+  }
+
+  const badges = document.querySelectorAll('.cart-count, .cart-badge');
   badges.forEach(b => {
     b.textContent = count;
-    b.style.display = count > 0 ? 'flex' : 'none';
+    b.style.display = count > 0 ? 'inline-flex' : 'none';
   });
 }
 
@@ -167,7 +183,7 @@ function renderProductCard(p) {
   return `
     <div class="product-card fade-up"
          data-id="${p._id}"
-         onclick="if(!event.target.closest('button')) { window.location.href='product.html?id=${p._id}'; }"
+         onclick="if(!event.target.closest('button')) { goToProduct('${p.productId || p._id || 'ruxova-premium'}'); }"
          style="cursor:pointer;"
     >
       <div style="position:relative;overflow:hidden;">
@@ -213,7 +229,7 @@ function renderProductCard(p) {
             type="button"
             class="btn btn-outline-gold btn-view-prod"
             style="padding:10px 14px;"
-            onclick="event.stopPropagation(); window.location.href='product.html?id=' + (encodeURIComponent(p.productId || p._id));"
+            onclick="event.stopPropagation(); goToProduct('${p.productId || p._id || 'ruxova-premium'}');"
           >
             ⚡ Order Now
           </button>
@@ -603,6 +619,7 @@ window.formatDate              = formatDate;
 window.formatDateTime          = formatDateTime;
 window.renderStars             = renderStars;
 window.initFadeUp              = initFadeUp;
+window.goToProduct             = goToProduct;
 window.updateCartBadge         = updateCartBadge;
 window.getWishlistIds          = getWishlistIds;
 window.isInWishlist            = isInWishlist;

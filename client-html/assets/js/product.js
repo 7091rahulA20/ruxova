@@ -952,35 +952,50 @@ function handleBuyNow(e) {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '⏳ Redirecting to Checkout...';
+    btn.innerHTML = '⏳ Directing to Checkout...';
   }
+
+  const prodToBuy = currentProduct || {
+    _id: 'ruxova-premium',
+    productId: 'ruxova-premium',
+    name: 'RUXOVA Premium Eau De Parfum',
+    price: 450
+  };
+
+  const itemSize = (typeof selectedSize !== 'undefined' && selectedSize) ? selectedSize : '50ml';
+  const count = (typeof qty !== 'undefined' && Number(qty) > 0) ? Number(qty) : 1;
 
   try {
-    const prodToBuy = currentProduct || (window.getProductConfig ? window.getProductConfig('ruxova-premium') : {
-      _id: 'ruxova-premium',
-      productId: 'ruxova-premium',
-      name: 'RUXOVA Premium Eau De Parfum'
-    });
-
-    const itemSize = typeof selectedSize !== 'undefined' && selectedSize ? selectedSize : '50ml';
-    const count = typeof qty !== 'undefined' && Number(qty) > 0 ? Number(qty) : 1;
-
     if (typeof addToCart === 'function') {
       addToCart(prodToBuy, count, itemSize);
-    }
-
-    window.location.href = 'checkout.html';
-  } catch (err) {
-    console.error('Error during Buy Now:', err);
-    window.location.href = 'checkout.html';
-  } finally {
-    setTimeout(() => {
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+    } else {
+      const cartKey = 'ruxova_cart';
+      const cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+      const prodId = prodToBuy.productId || prodToBuy._id || 'ruxova-premium';
+      const prodName = prodToBuy.name || 'RUXOVA Premium Eau De Parfum';
+      let itemPrice = prodToBuy.price || 450;
+      
+      const existingIdx = cart.findIndex(item => (item.productId === prodId || item._id === prodToBuy._id) && item.size === itemSize);
+      if (existingIdx > -1) {
+        cart[existingIdx].quantity += count;
+      } else {
+        cart.push({
+          productId: prodId,
+          name: prodName,
+          productName: prodName,
+          size: itemSize,
+          price: itemPrice,
+          quantity: count
+        });
       }
-    }, 2000);
+      localStorage.setItem(cartKey, JSON.stringify(cart));
+      if (typeof updateCartBadge === 'function') updateCartBadge();
+    }
+  } catch (err) {
+    console.error('Error during Buy Now execution:', err);
   }
+
+  window.location.href = 'checkout.html';
 }
 
 async function handleWishlist(id) {

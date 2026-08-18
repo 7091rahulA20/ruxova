@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!requireAuth()) return;
   setActiveNavLink();
   updateNavbarAuth();
-  updateCartBadge();
+  if (typeof clearCart === 'function') clearCart();
+  else if (typeof updateCartBadge === 'function') updateCartBadge();
   initMobileMenu();
 
   await loadOrderDetails();
