@@ -48,11 +48,12 @@
       background-color: #111417;
       background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg');
       background-size: cover;
-      background-position: right center;
+      background-position: right 18%;
       min-height: 90vh;
       display: flex;
       align-items: center;
       position: relative;
+      padding-top: 60px;
     }
     
     .hero-overlay {
@@ -65,17 +66,19 @@
     @media (min-width: 992px) {
       .hero {
         background-size: cover !important;
-        background-position: right center !important;
-        min-height: 90vh;
+        background-position: right 18% !important;
+        min-height: 92vh;
+        padding-top: 80px;
       }
     }
 
     @media (max-width: 768px) {
       .hero {
         background-size: cover !important;
-        background-position: 75% center !important;
+        background-position: 75% 20% !important;
         filter: brightness(1.15) contrast(1.03) !important;
         min-height: 85vh;
+        padding-top: 60px;
       }
       .hero-overlay {
         background: linear-gradient(180deg, rgba(17,20,23,0.4) 0%, rgba(17,20,23,0.1) 45%, rgba(17,20,23,0.85) 100%) !important;
