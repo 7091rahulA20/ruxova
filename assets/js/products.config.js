@@ -11,11 +11,11 @@ window.RUXOVA_PRODUCTS_CONFIG = {
     description: 'An opulent luxury fragrance combining royal oud, French rose, bergamot, and warm golden amber for an irresistible, long-lasting aura.',
     defaultSize: '50ml',
     sizes: {
-      '10ml':  { price: 70,   comparePrice: 99,   images: ['products/ruxova-10ml-1.jpg',  'products/ruxova-10ml-2.jpg',  'products/ruxova-10ml-3.jpg',  'products/ruxova-10ml-4.jpg'] },
-      '25ml':  { price: 250,  comparePrice: 349,  images: ['products/ruxova-25ml-1.jpg',  'products/ruxova-25ml-2.jpg',  'products/ruxova-25ml-3.jpg',  'products/ruxova-25ml-4.jpg'] },
-      '50ml':  { price: 450,  comparePrice: 599,  images: ['products/ruxova-50ml-1.jpg',  'products/ruxova-50ml-2.jpg',  'products/ruxova-50ml-3.jpg',  'products/ruxova-50ml-4.jpg'] },
-      '100ml': { price: 799,  comparePrice: 1199, images: ['products/ruxova-100ml-1.jpg', 'products/ruxova-100ml-2.jpg', 'products/ruxova-100ml-3.jpg', 'products/ruxova-100ml-4.jpg'] },
-      '200ml': { price: 1499, comparePrice: 1999, images: ['products/ruxova-200ml-1.jpg', 'products/ruxova-200ml-2.jpg', 'products/ruxova-200ml-3.jpg', 'products/ruxova-200ml-4.jpg'] }
+      '10ml':  { price: 70,   comparePrice: 99,   images: ['/products/ruxova-10ml-1.jpg',  '/products/ruxova-10ml-2.jpg',  '/products/ruxova-10ml-3.jpg',  '/products/ruxova-10ml-4.jpg'] },
+      '25ml':  { price: 250,  comparePrice: 349,  images: ['/products/ruxova-25ml-1.jpg',  '/products/ruxova-25ml-2.jpg',  '/products/ruxova-25ml-3.jpg',  '/products/ruxova-25ml-4.jpg'] },
+      '50ml':  { price: 450,  comparePrice: 599,  images: ['/products/ruxova-50ml-1.jpg',  '/products/ruxova-50ml-2.jpg',  '/products/ruxova-50ml-3.jpg',  '/products/ruxova-50ml-4.jpg'] },
+      '100ml': { price: 799,  comparePrice: 1199, images: ['/products/ruxova-100ml-1.jpg', '/products/ruxova-100ml-2.jpg', '/products/ruxova-100ml-3.jpg', '/products/ruxova-100ml-4.jpg'] },
+      '200ml': { price: 1499, comparePrice: 1999, images: ['/products/ruxova-200ml-1.jpg', '/products/ruxova-200ml-2.jpg', '/products/ruxova-200ml-3.jpg', '/products/ruxova-200ml-4.jpg'] }
     }
   }
 };
@@ -41,10 +41,10 @@ window.getProductLocalImages = function(productId, size = '50ml') {
   }
   const cleanSize = normSize.includes('ml') ? normSize : `${normSize}ml`;
   return [
-    `products/ruxova-${cleanSize}-1.jpg`,
-    `products/ruxova-${cleanSize}-2.jpg`,
-    `products/ruxova-${cleanSize}-3.jpg`,
-    `products/ruxova-${cleanSize}-4.jpg`
+    `/products/ruxova-${cleanSize}-1.jpg`,
+    `/products/ruxova-${cleanSize}-2.jpg`,
+    `/products/ruxova-${cleanSize}-3.jpg`,
+    `/products/ruxova-${cleanSize}-4.jpg`
   ];
 };
 
@@ -53,5 +53,5 @@ window.getProductLocalImages = function(productId, size = '50ml') {
  */
 window.getProductPrimaryImage = function(productId, size = '50ml') {
   const imgs = window.getProductLocalImages(productId, size);
-  return imgs && imgs.length > 0 ? imgs[0] : 'products/ruxova-50ml-1.jpg';
+  return imgs && imgs.length > 0 ? imgs[0] : '/products/ruxova-50ml-1.jpg';
 };

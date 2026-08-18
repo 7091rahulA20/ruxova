@@ -1,0 +1,27 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "src": "/products/(.*)", "dest": "/products/$1" },
+    { "src": "/public/products/(.*)", "dest": "/public/products/$1" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/order-success", "dest": "/order-success.html" },
+    { "src": "/order-success.html", "dest": "/order-success.html" },
+    { "src": "/product", "dest": "/product.html" },
+    { "src": "/product.html", "dest": "/product.html" },
+    { "src": "/shop", "dest": "/shop.html" },
+    { "src": "/shop.html", "dest": "/shop.html" },
+    { "src": "/cart", "dest": "/cart.html" },
+    { "src": "/cart.html", "dest": "/cart.html" },
+    { "src": "/checkout", "dest": "/checkout.html" },
+    { "src": "/checkout.html", "dest": "/checkout.html" },
+    { "src": "/orders", "dest": "/orders.html" },
+    { "src": "/orders.html", "dest": "/orders.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/login.html", "dest": "/login.html" },
+    { "src": "/register", "dest": "/register.html" },
+    { "src": "/register.html", "dest": "/register.html" },
+    { "src": "/contact", "dest": "/contact.html" },
+    { "src": "/contact.html", "dest": "/contact.html" }
+  ]
+}
