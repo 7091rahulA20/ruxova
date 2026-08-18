@@ -39,20 +39,121 @@
   <meta name="twitter:image" content="https://ruxova.vercel.app/assets/images/ruxova-luxury-perfume-brand-logo.png">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    @media(max-width:768px) {
-      .product-layout { grid-template-columns: 1fr !important; gap: 32px !important; }
-      .review-breakdown-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
-      .rating-avg-box { border-right: none !important; border-bottom: 1px solid var(--black-border); padding-right: 0 !important; padding-bottom: 20px; }
-      .fk-gallery-wrapper { flex-direction: column-reverse !important; }
-      .fk-thumbs-container { flex-direction: row !important; width: 100% !important; overflow-x: auto !important; max-height: none !important; }
+    /* Flipkart-Style Gallery Layout & Mobile Responsiveness */
+    .product-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 40px;
+      align-items: start;
+      width: 100%;
     }
-    
-    /* Flipkart-Style Gallery Layout */
+
     .fk-gallery-wrapper {
       display: flex;
       flex-direction: row;
       gap: 16px;
       align-items: flex-start;
+      width: 100%;
+      min-width: 0;
+    }
+    
+    .fk-thumbs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 90px;
+      max-height: 520px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding-right: 4px;
+    }
+    .fk-thumbs-container::-webkit-scrollbar { width: 4px; height: 4px; }
+    .fk-thumbs-container::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+
+    .fk-thumb-item {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      border: 2px solid var(--black-border);
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease-in-out;
+      background: var(--black-card);
+    }
+    .fk-thumb-item:hover { border-color: rgba(201, 168, 76, 0.6); }
+    .fk-thumb-item.active {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 12px rgba(201, 168, 76, 0.5);
+      transform: scale(1.02);
+    }
+    .fk-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fk-main-box {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #050505;
+      border: 1px solid var(--black-border);
+      cursor: crosshair;
+    }
+    .fk-main-box img#main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.2s ease, transform 0.15s ease-out;
+      transform-origin: center center;
+    }
+
+    /* Mobile Responsive Breakpoints */
+    @media (max-width: 768px) {
+      .product-layout {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+      }
+      .fk-gallery-wrapper {
+        flex-direction: column-reverse !important;
+        width: 100% !important;
+        gap: 12px !important;
+      }
+      .fk-thumbs-container {
+        flex-direction: row !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow-x: auto !important;
+        padding: 4px 0 !important;
+      }
+      .fk-thumb-item {
+        width: 64px !important;
+        height: 64px !important;
+      }
+      .fk-main-box {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1 !important;
+      }
+      .review-breakdown-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+      }
+      .rating-avg-box {
+        border-right: none !important;
+        border-bottom: 1px solid var(--black-border);
+        padding-right: 0 !important;
+        padding-bottom: 20px;
+      }
+      .action-buttons-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
     }
     
     .fk-thumbs-container {

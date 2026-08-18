@@ -271,15 +271,10 @@ function renderProduct(p) {
     }
   }
 
-  const discountPct = p.comparePrice && p.comparePrice > p.price
-    ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
-    : null;
-
-  const avgRatingNum = p.avgRating || 0;
-  const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
-
-  // Guarantee productImages is populated with local predictable images
-  if (typeof window.getProductLocalImages === 'function') {
+  // Prioritize Admin uploaded images if present in database; fallback to local images
+  if (Array.isArray(p.images) && p.images.length > 0) {
+    productImages = p.images.map(img => typeof img === 'string' ? img : (img.url || img.src)).filter(Boolean);
+  } else if (typeof window.getProductLocalImages === 'function') {
     productImages = window.getProductLocalImages(p.productId || p._id, selectedSize);
   } else {
     productImages = [
@@ -289,6 +284,13 @@ function renderProduct(p) {
       'products/ruxova-50ml-4.jpg'
     ];
   }
+
+  const discountPct = p.comparePrice && p.comparePrice > p.price
+    ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
+    : null;
+
+  const avgRatingNum = p.avgRating || 0;
+  const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
 
   let thumbs = [...productImages];
 
@@ -340,14 +342,14 @@ function renderProduct(p) {
             <span>Image <span id="img-index-display">${currentImageIndex + 1}</span> of ${thumbs.length}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Product Guarantee Badges Section -->
-        <div style="margin-top:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;">
-          ${featureBadge('🌿', 'Long Lasting', '8 to 12+ Hours Sillage')}
-          ${featureBadge('👑', 'Premium Quality', 'Finest Botanical Oils')}
-          ${featureBadge('🛡️', '100% Original', 'Direct from RUXOVA')}
-          ${featureBadge('🚚', 'Fast Delivery', 'Dispatched in 24 Hours')}
-        </div>
+      <!-- Product Guarantee Badges Section -->
+      <div style="margin-top:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;background:var(--black-card);border:1px solid var(--black-border);border-radius:var(--radius);padding:20px;">
+        ${featureBadge('🌿', 'Long Lasting', '8 to 12+ Hours Sillage')}
+        ${featureBadge('👑', 'Premium Quality', 'Finest Botanical Oils')}
+        ${featureBadge('🛡️', '100% Original', 'Direct from RUXOVA')}
+        ${featureBadge('🚚', 'Fast Delivery', 'Dispatched in 24 Hours')}
       </div>
 
       <!-- Info Column -->
@@ -366,7 +368,7 @@ function renderProduct(p) {
           <span style="color:var(--gold);font-size:13px;font-weight:600;">Brand: RUXOVA PERFUMES</span>
         </div>
 
-        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;background:rgba(201,168,76,0.06);padding:14px 20px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);">
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;background:rgba(201,168,76,0.06);padding:14px 20px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);" class="price-box-main">
           <span style="font-size:36px;font-weight:700;color:var(--gold);">${safeFormatCurrency(p.price)}</span>
           ${p.comparePrice ? `<span style="font-size:20px;text-decoration:line-through;color:var(--text-muted);">${safeFormatCurrency(p.comparePrice)}</span>` : ''}
           ${discountPct ? `<span style="color:var(--success);font-weight:700;font-size:14px;">Save ${discountPct}%</span>` : ''}
@@ -374,37 +376,63 @@ function renderProduct(p) {
 
         <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;font-size:15px;">${p.description}</p>
 
-        <!-- Volume Selection (Driven by Backend Database) -->
+        <!-- Volume Selection (Driven by Backend Database Availability) -->
         <div style="margin-bottom:24px;">
           <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Available Size / ML:</label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;" id="size-picker">
             ${(() => {
-              const sizesList = (p.sizes && p.sizes.length > 0)
-                ? p.sizes
-                : [
-                    { size: '10ml', price: 70 },
-                    { size: '25ml', price: 250 },
-                    { size: '50ml', price: p.price || 450 },
-                    { size: '100ml', price: 799 },
-                    { size: '200ml', price: 1499 }
-                  ];
+              const allStandardSizes = ['10ml', '25ml', '50ml', '100ml', '200ml'];
+              
+              const dbMap = {};
+              if (Array.isArray(p.sizes) && p.sizes.length > 0) {
+                p.sizes.forEach(s => {
+                  if (s && s.size) dbMap[s.size.toLowerCase().trim()] = s;
+                });
+              } else if (p.volume) {
+                const vols = p.volume.split(/[,/]+/).map(v => v.trim().toLowerCase());
+                vols.forEach(v => {
+                  dbMap[v] = { size: v, price: p.price, comparePrice: p.comparePrice, stock: p.stock };
+                });
+              }
 
-              if (!selectedSize) selectedSize = sizesList[0]?.size || '50ml';
+              const availableKeys = Object.keys(dbMap);
+              if (availableKeys.length > 0) {
+                const matchFirst = allStandardSizes.find(s => dbMap[s.toLowerCase()]);
+                if (!selectedSize || !dbMap[selectedSize.toLowerCase().trim()]) {
+                  selectedSize = matchFirst ? matchFirst : availableKeys[0];
+                }
+              }
 
-              return sizesList.map(item => {
-                const sName = item.size;
-                const sPrice = item.price;
-                const isSelected = selectedSize.toLowerCase() === sName.toLowerCase();
-                return `
-                  <button
-                    type="button"
-                    class="size-opt-btn"
-                    data-size="${sName}"
-                    onclick="selectSize('${sName}')"
-                    style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
-                  >
-                    ${sName} — ₹${sPrice}
-                  </button>`;
+              return allStandardSizes.map(s => {
+                const normKey = s.toLowerCase().trim();
+                const sData = dbMap[normKey];
+                const isAvailable = Boolean(sData);
+                const isSelected = selectedSize.toLowerCase().trim() === normKey;
+
+                if (isAvailable) {
+                  const sPrice = sData.price || p.price || 450;
+                  return `
+                    <button
+                      type="button"
+                      class="size-opt-btn available"
+                      data-size="${s}"
+                      onclick="selectSize('${s}')"
+                      style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
+                    >
+                      ${s} — ₹${sPrice}
+                    </button>`;
+                } else {
+                  return `
+                    <button
+                      type="button"
+                      disabled
+                      class="size-opt-btn unavailable"
+                      style="padding:10px 14px;border-radius:8px;border:1px solid var(--black-border);background:rgba(255,255,255,0.02);color:var(--text-muted);font-weight:500;font-size:13px;cursor:not-allowed;opacity:0.45;text-decoration:line-through;"
+                      title="${s} is not available for this perfume"
+                    >
+                      ${s} (Not Available)
+                    </button>`;
+                }
               }).join('');
             })()}
           </div>
@@ -476,7 +504,7 @@ function renderProduct(p) {
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;" class="action-buttons-grid">
           <button id="add-to-cart-btn" class="btn btn-gold btn-lg" onclick="handleAddToCartDetail()" ${p.stock === 0 ? 'disabled' : ''} style="width:100%;">
             🛒 Add to Cart
           </button>

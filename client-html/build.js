@@ -50,7 +50,15 @@ for (const entry of rootEntries) {
   }
 }
 
-// 2. Also populate ./client-html folder for Vercel if Vercel Root Directory is set to "client-html"
+// 2. Populate /product/index.html for clean URLs like /product?id=...
+const productHtmlFile = path.join(srcDir, 'product.html');
+const productFolderInDist = path.join(distDir, 'product');
+if (fs.existsSync(productHtmlFile)) {
+  fs.mkdirSync(productFolderInDist, { recursive: true });
+  fs.copyFileSync(productHtmlFile, path.join(productFolderInDist, 'index.html'));
+}
+
+// 3. Also populate ./client-html folder for Vercel if Vercel Root Directory is set to "client-html"
 if (fs.existsSync(clientHtmlDir)) {
   fs.rmSync(clientHtmlDir, { recursive: true, force: true });
 }
