@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luxury Perfume Details — RUXOVA PERFUMES</title>
+  <meta name="description" content="View luxury perfume details, scent notes, ingredients, image gallery, customer reviews, and pricing at RUXOVA PERFUMES. Buy long-lasting Eau De Parfum online.">
+  <meta name="keywords" content="RUXOVA, RUXOVA PERFUMES, luxury perfume, scent notes, fragrance ingredients, perfume reviews, buy perfume online">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#121212">
+  <link rel="canonical" id="canonical-url" href="https://ruxova.vercel.app/product.html">
+  <meta name="p:domain_verify" content="530d7e73c8d914c981035c04034de3ae"/>
+
+  <!-- Preconnect & DNS Prefetch Critical Origins -->
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://res.cloudinary.com">
+  <link rel="dns-prefetch" href="https://ruxovabackend.onrender.com">
+
+  <!-- Favicon / Brand Logo -->
+  <link rel="icon" type="image/png" href="assets/images/ruxova-perfumes-logo.png">
+  <link rel="apple-touch-icon" href="assets/images/ruxova-perfumes-logo.png">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="product">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:url" content="https://ruxova.vercel.app/product.html">
+  <meta property="og:site_name" content="RUXOVA PERFUMES">
+  <meta property="og:title" content="Luxury Perfume Details — RUXOVA PERFUMES">
+  <meta property="og:description" content="View luxury perfume details, scent notes, ingredients, image gallery, customer reviews, and pricing at RUXOVA PERFUMES.">
+  <meta property="og:image" content="https://ruxova.vercel.app/assets/images/ruxova-luxury-perfume-brand-logo.png">
+  <meta property="og:image:alt" content="RUXOVA PERFUMES Brand Logo">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Luxury Perfume Details — RUXOVA PERFUMES">
+  <meta name="twitter:description" content="View luxury perfume details, scent notes, ingredients, image gallery, customer reviews, and pricing at RUXOVA PERFUMES.">
+  <meta name="twitter:image" content="https://ruxova.vercel.app/assets/images/ruxova-luxury-perfume-brand-logo.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    @media(max-width:768px) {
+      .product-layout { grid-template-columns: 1fr !important; gap: 32px !important; }
+      .review-breakdown-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+      .rating-avg-box { border-right: none !important; border-bottom: 1px solid var(--black-border); padding-right: 0 !important; padding-bottom: 20px; }
+      .fk-gallery-wrapper { flex-direction: column-reverse !important; }
+      .fk-thumbs-container { flex-direction: row !important; width: 100% !important; overflow-x: auto !important; max-height: none !important; }
+    }
+    
+    /* Flipkart-Style Gallery Layout */
+    .fk-gallery-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .fk-thumbs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 90px;
+      max-height: 520px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding-right: 4px;
+    }
+    .fk-thumbs-container::-webkit-scrollbar { width: 4px; height: 4px; }
+    .fk-thumbs-container::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+
+    .fk-thumb-item {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      border: 2px solid var(--black-border);
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease-in-out;
+      background: var(--black-card);
+    }
+    .fk-thumb-item:hover {
+      border-color: rgba(201, 168, 76, 0.6);
+    }
+    .fk-thumb-item.active {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 12px rgba(201, 168, 76, 0.5);
+      transform: scale(1.02);
+    }
+    .fk-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Main Image Box with Desktop Hover Zoom Lens */
+    .fk-main-box {
+      position: relative;
+      flex: 1;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #050505;
+      border: 1px solid var(--black-border);
+      cursor: crosshair;
+    }
+    .fk-main-box img#main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.2s ease, transform 0.15s ease-out;
+      transform-origin: center center;
+    }
+
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 3;
+      transition: all 0.2s ease;
+    }
+    .gallery-arrow:hover {
+      background: var(--gold);
+      color: #000;
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.6);
+    }
+    .prev-arrow { left: 14px; }
+    .next-arrow { right: 14px; }
+
+    /* Lightbox Modal */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
+      z-index: 999; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; user-select: none;
+    }
+    .lightbox-overlay.open { display: flex; }
+    .lightbox-img-wrapper {
+      position: relative; max-width: 90vw; max-height: 80vh; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; border-radius: 12px;
+    }
+    .lightbox-img {
+      max-width: 100%; max-height: 80vh; object-fit: contain;
+      transition: transform 0.25s ease, opacity 0.2s ease; cursor: grab;
+    }
+    .lightbox-btn {
+      background: rgba(22, 22, 22, 0.8); border: 1px solid var(--gold); color: var(--gold);
+      width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.2s;
+    }
+    .lightbox-btn:hover { background: var(--gold); color: #000; }
+  </style>
+</head>
+<body>
+<div class="page-loader" id="page-loader">
+  <p class="loader-logo gold-text">RUXOVA</p>
+  <div class="loader-ring"></div>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo gold-text">RUXOVA</a>
+  <ul class="navbar-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li id="nav-auth-links" style="display:contents;"></li>
+  </ul>
+  <div class="navbar-actions">
+    <a href="cart.html" class="cart-icon"><span>🛒</span><span class="cart-badge cart-count" style="display:none;">0</span></a>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a><a href="shop.html">Shop</a>
+  <a href="cart.html">Cart</a>
+  <a href="contact.html">Contact</a>
+  <a href="shop.html" class="btn btn-gold" style="margin-top:16px;text-align:center;">Shop Collection</a>
+</div>
+
+<!-- Breadcrumb -->
+<div style="padding:16px 24px;max-width:1200px;margin:0 auto;">
+  <p style="font-size:13px;color:var(--text-muted);">
+    <a href="index.html" style="color:var(--text-muted);text-decoration:none;">Home</a>
+    <span style="margin:0 8px;">›</span>
+    <a href="shop.html" style="color:var(--text-muted);text-decoration:none;">Shop</a>
+    <span style="margin:0 8px;">›</span>
+    <span style="color:var(--gold);" id="breadcrumb-title">Product Details</span>
+  </p>
+</div>
+
+<!-- Product Content -->
+<main id="product-container" style="max-width:1200px;margin:0 auto;padding:24px;"></main>
+
+<!-- Lightbox Zoom Overlay -->
+<div id="lightbox" class="lightbox-overlay">
+  <div style="position:absolute;top:20px;right:20px;display:flex;gap:12px;z-index:1001;">
+    <button type="button" class="lightbox-btn" id="lb-zoom-in" title="Zoom In">+</button>
+    <button type="button" class="lightbox-btn" id="lb-zoom-out" title="Zoom Out">−</button>
+    <button type="button" class="lightbox-btn" id="lb-reset-zoom" title="Reset Zoom" style="font-size:14px;">100%</button>
+    <button type="button" class="lightbox-btn" id="lb-close" title="Close (ESC)">✕</button>
+  </div>
+
+  <button type="button" class="lightbox-btn" id="lb-prev" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);z-index:1001;">‹</button>
+  
+  <div class="lightbox-img-wrapper">
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Zoomed Product Image">
+  </div>
+  
+  <button type="button" class="lightbox-btn" id="lb-next" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);z-index:1001;">›</button>
+
+  <p id="lightbox-counter" style="color:var(--gold);font-size:14px;margin-top:16px;z-index:1001;"></p>
+</div>
+
+<!-- Footer -->
+<footer style="background:var(--black-soft);border-top:1px solid var(--black-border);padding:32px 24px;text-align:center;margin-top:80px;">
+  <p class="gold-text" style="font-family:var(--font-serif);font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:8px;">RUXOVA</p>
+  <div class="social-links-wrap" style="justify-content:center;margin:12px 0 16px;">
+    <a href="https://www.instagram.com/ruxov.a?igsh=MWF5YnUyaGtwZWUycg==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-icon-link">
+      <i class="fa-brands fa-instagram"></i>
+    </a>
+    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-icon-link">
+      <i class="fa-brands fa-facebook-f"></i>
+    </a>
+    <a href="https://wa.me/917808763348" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-icon-link">
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+  </div>
+  <p style="color:var(--text-muted);font-size:13px;">© 2025 RUXOVA PERFUMES. All rights reserved. Developed by RSAGENCY</p>
+</footer>
+
+<script src="assets/js/api.js" defer></script>
+<script src="assets/js/products.config.js" defer></script>
+<script src="assets/js/cart.js" defer></script>
+<script src="assets/js/utils.js" defer></script>
+<script src="assets/js/seo.js" defer></script>
+<script src="assets/js/product.js" defer></script>
+</body>
+</html> 

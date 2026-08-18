@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>window.location.href='shop.html';</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to your RUXOVA PERFUMES account to manage your luxury fragrance orders.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#121212">
+  <link rel="canonical" href="https://ruxova.vercel.app/login.html">
+  <meta name="p:domain_verify" content="530d7e73c8d914c981035c04034de3ae"/>
+  <link rel="icon" type="image/png" href="assets/images/ruxova-perfumes-logo.png">
+  <link rel="apple-touch-icon" href="assets/images/ruxova-perfumes-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="display:flex;flex-direction:column;min-height:100vh;">
+
+<div class="page-loader" id="page-loader">
+  <div class="loader-ring"></div>
+</div>
+
+<nav class="navbar" style="border-bottom:none;background:transparent;">
+  <a href="index.html" class="navbar-logo gold-text">RUXOVA</a>
+</nav>
+
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;background:radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, var(--black) 70%);">
+  <div class="card" style="width:100%;max-width:440px;padding:40px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold-dark),var(--gold),var(--gold-light));"></div>
+
+    <div style="text-align:center;margin-bottom:32px;">
+      <h1 style="font-family:var(--font-serif);font-size:28px;font-weight:700;margin-bottom:8px;">Welcome Back</h1>
+      <p style="color:var(--text-muted);">Sign in to access your luxury collection.</p>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="login-email" class="form-control" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between;">
+          <span>Password</span>
+          <a href="#" style="color:var(--gold);text-transform:none;text-decoration:none;">Forgot?</a>
+        </label>
+        <div style="position:relative;">
+          <input type="password" id="login-password" class="form-control" required placeholder="••••••••" style="padding-right:40px;">
+          <button type="button" id="toggle-login-pass" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">👁</button>
+        </div>
+      </div>
+      <button type="submit" id="login-btn" class="btn btn-gold btn-lg" style="width:100%;margin-top:12px;">Sign In</button>
+    </form>
+
+    <div style="text-align:center;margin-top:32px;color:var(--text-secondary);font-size:14px;">
+      New to RUXOVA? <a href="register.html" style="color:var(--gold);text-decoration:none;font-weight:600;">Create an account</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/utils.js" defer></script>
+<script src="assets/js/seo.js" defer></script>
+<script src="assets/js/auth.js" defer></script>
+</body>
+</html>

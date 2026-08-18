@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <url>
+    <loc>https://ruxova.vercel.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-luxury-perfume-brand-logo.png</image:loc>
+      <image:title>RUXOVA PERFUMES Official Brand Logo</image:title>
+      <image:caption>RUXOVA PERFUMES — Luxury EDP Fragrance House India</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-luxury-perfumes-hero.png</image:loc>
+      <image:title>RUXOVA Luxury Perfumes Banner</image:title>
+      <image:caption>Discover Signature Luxury Perfumes for Men and Women</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-oud-royal-luxury-perfume.png</image:loc>
+      <image:title>RUXOVA Oud Royal Luxury Perfume</image:title>
+      <image:caption>Long lasting luxury Oud Royal EDP fragrance for men and women</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-velvet-rose-eau-de-parfum.png</image:loc>
+      <image:title>RUXOVA Velvet Rose Eau De Parfum</image:title>
+      <image:caption>Elegant French Velvet Rose EDP fragrance by RUXOVA</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-golden-amber-long-lasting-perfume.png</image:loc>
+      <image:title>RUXOVA Golden Amber Perfume</image:title>
+      <image:caption>Premium Golden Amber long lasting EDP perfume</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-black-orchid-unisex-perfume.png</image:loc>
+      <image:title>RUXOVA Black Orchid Unisex Perfume</image:title>
+      <image:caption>Exotic Black Orchid Eau De Parfum by RUXOVA</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-ocean-breeze-fresh-perfume.png</image:loc>
+      <image:title>RUXOVA Ocean Breeze Fresh Perfume</image:title>
+      <image:caption>Refreshing Ocean Breeze EDP perfume for summer</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ruxova.vercel.app/assets/images/ruxova-french-vanilla-luxury-fragrance.png</image:loc>
+      <image:title>RUXOVA French Vanilla Fragrance</image:title>
+      <image:caption>Sweet French Vanilla long lasting perfume</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://ruxova.vercel.app/index.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://ruxova.vercel.app/shop.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://ruxova.vercel.app/product.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://ruxova.vercel.app/contact.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

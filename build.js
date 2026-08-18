@@ -3,10 +3,11 @@ const path = require('path');
 
 const srcDir = __dirname;
 const distDir = path.join(__dirname, 'dist');
+const clientHtmlDir = path.join(__dirname, 'client-html');
+const clientHtmlDistDir = path.join(clientHtmlDir, 'dist');
 
 console.log('🚀 Building RUXOVA Client Static Site...');
 
-// Helper to copy directory recursively
 function copyDir(src, dest) {
   if (!fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
@@ -16,7 +17,7 @@ function copyDir(src, dest) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
-    if (entry.name === 'dist' || entry.name === 'node_modules' || entry.name === '.git') {
+    if (entry.name === 'dist' || entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'client-html') {
       continue;
     }
 
@@ -28,16 +29,15 @@ function copyDir(src, dest) {
   }
 }
 
-// Clean & create dist
+// 1. Clean & Build ./dist
 if (fs.existsSync(distDir)) {
   fs.rmSync(distDir, { recursive: true, force: true });
 }
 fs.mkdirSync(distDir, { recursive: true });
 
-// Copy all root files and directories except dist, node_modules, .git
 const rootEntries = fs.readdirSync(srcDir, { withFileTypes: true });
 for (const entry of rootEntries) {
-  if (entry.name === 'dist' || entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'build.js') {
+  if (entry.name === 'dist' || entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'client-html' || entry.name === 'build.js') {
     continue;
   }
   const srcPath = path.join(srcDir, entry.name);
@@ -50,11 +50,18 @@ for (const entry of rootEntries) {
   }
 }
 
+// 2. Also populate ./client-html folder for Vercel if Vercel Root Directory is set to "client-html"
+if (fs.existsSync(clientHtmlDir)) {
+  fs.rmSync(clientHtmlDir, { recursive: true, force: true });
+}
+fs.mkdirSync(clientHtmlDir, { recursive: true });
+copyDir(srcDir, clientHtmlDir);
+copyDir(distDir, clientHtmlDistDir);
+
 const indexPath = path.join(distDir, 'index.html');
 if (fs.existsSync(indexPath)) {
-  console.log('✅ BUILD SUCCESSFUL: Generated dist/index.html');
-  console.log(`📦 dist directory contains ${fs.readdirSync(distDir).length} top-level entries.`);
+  console.log('✅ BUILD SUCCESSFUL: Generated dist/index.html & client-html/dist/index.html');
 } else {
-  console.error('❌ BUILD ERROR: dist/index.html was not generated!');
+  console.error('❌ BUILD ERROR: index.html missing');
   process.exit(1);
 }
