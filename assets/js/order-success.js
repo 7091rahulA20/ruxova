@@ -133,16 +133,19 @@ function renderConfirmation(order, container) {
       <div class="card" style="padding:24px;border:1px solid var(--black-border);">
         <h3 style="font-family:var(--font-serif);font-size:18px;color:var(--gold);margin-bottom:16px;">Ordered Items</h3>
         <div style="display:flex;flex-direction:column;gap:16px;">
-          ${order.items.map(item => `
-            <div style="display:flex;gap:16px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--black-border);">
-              <img src="${item.image || item.product?.images?.[0]?.url || ''}" alt="${item.name}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
-              <div style="flex:1;">
-                <p style="font-weight:600;font-size:15px;margin-bottom:4px;">${item.name}</p>
-                <p style="font-size:13px;color:var(--text-muted);">Quantity: ${item.quantity} × ${formatCurrency(item.price)}</p>
+          ${order.items.map(item => {
+            const itemImg = window.getProductPrimaryImage ? window.getProductPrimaryImage(item.productId || item.product?._id, item.size) : 'products/ruxova-50ml-1.jpg';
+            return `
+              <div style="display:flex;gap:16px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--black-border);">
+                <img src="${itemImg}" alt="${item.productName || item.name}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
+                <div style="flex:1;">
+                  <p style="font-weight:600;font-size:15px;margin-bottom:4px;">${item.productName || item.name} <span style="font-size:13px;color:var(--gold);">(${item.size || '50ml'})</span></p>
+                  <p style="font-size:13px;color:var(--text-muted);">Quantity: ${item.quantity} × ${formatCurrency(item.price)}</p>
+                </div>
+                <p style="font-weight:700;color:var(--gold);font-size:16px;">${formatCurrency(item.price * item.quantity)}</p>
               </div>
-              <p style="font-weight:700;color:var(--gold);font-size:16px;">${formatCurrency(item.price * item.quantity)}</p>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
 
         <!-- Totals Breakdown -->

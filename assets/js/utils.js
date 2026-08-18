@@ -156,14 +156,13 @@ function renderProductCard(p) {
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
 
-  let rawImageUrl = 'assets/images/ruxova-perfumes-logo.png';
-  if (Array.isArray(p.images) && p.images.length > 0) {
+  let imageUrl = 'products/ruxova-50ml-1.jpg';
+  if (window.getProductPrimaryImage) {
+    imageUrl = window.getProductPrimaryImage(p.productId || p._id, p.volume || '50ml');
+  } else if (Array.isArray(p.images) && p.images.length > 0) {
     const first = p.images[0];
-    rawImageUrl = typeof first === 'string' ? first : (first.url || first.src || rawImageUrl);
-  } else if (p.image) {
-    rawImageUrl = typeof p.image === 'string' ? p.image : (p.image.url || p.image.src || rawImageUrl);
+    imageUrl = typeof first === 'string' ? first : (first.url || first.src || imageUrl);
   }
-  const imageUrl = window.optimizeImageUrl ? window.optimizeImageUrl(rawImageUrl, 500) : rawImageUrl;
 
   return `
     <div class="product-card fade-up"

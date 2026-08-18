@@ -125,17 +125,20 @@ function renderOrderCard(order) {
 
       <!-- Items List -->
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-        ${order.items.map(item => `
-          <div style="display:flex;gap:16px;align-items:center;">
-            <img src="${item.image || item.product?.images?.[0]?.url || ''}" alt="${item.name}"
-              style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
-            <div style="flex:1;">
-              <p style="font-size:15px;font-weight:600;margin-bottom:2px;">${item.name}</p>
-              <p style="font-size:13px;color:var(--text-muted);">Qty: ${item.quantity} × ${formatCurrency(item.price)}</p>
+        ${order.items.map(item => {
+          const itemImg = window.getProductPrimaryImage ? window.getProductPrimaryImage(item.productId || item.product?._id, item.size) : 'products/ruxova-50ml-1.jpg';
+          return `
+            <div style="display:flex;gap:16px;align-items:center;">
+              <img src="${itemImg}" alt="${item.productName || item.name}"
+                style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
+              <div style="flex:1;">
+                <p style="font-size:15px;font-weight:600;margin-bottom:2px;">${item.productName || item.name} <span style="font-size:13px;color:var(--gold);">(${item.size || '50ml'})</span></p>
+                <p style="font-size:13px;color:var(--text-muted);">Qty: ${item.quantity} × ${formatCurrency(item.price)}</p>
+              </div>
+              <p style="font-weight:700;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
             </div>
-            <p style="font-weight:700;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
 
       <!-- Footer & Action Buttons -->

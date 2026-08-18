@@ -1,6 +1,6 @@
 /* ================================================================
    RUXOVA PERFUMES — Cart Management
-   LocalStorage-based cart
+   LocalStorage-based cart supporting multi-ML items & local images
    ================================================================ */
 
 const CART_KEY = 'ruxova_cart';
@@ -18,41 +18,79 @@ function saveCart(cart) {
   updateCartBadge();
 }
 
-function addToCart(product, quantity = 1) {
+function addToCart(product, quantity = 1, size = null) {
   const cart = getCart();
-  const existingIndex = cart.findIndex(item => item._id === product._id);
+  const prodId = product.productId || product._id || 'ruxova-premium';
+  const itemSize = (size || product.size || (typeof selectedSize !== 'undefined' ? selectedSize : '50ml')).toString();
+  const prodName = product.name || product.productName || 'RUXOVA Premium Eau De Parfum';
+
+  // Get price for selected size from product or config if needed
+  let itemPrice = product.price;
+  if (!itemPrice && window.getProductConfig) {
+    const cfg = window.getProductConfig(prodId);
+    if (cfg && cfg.sizes && cfg.sizes[itemSize.toLowerCase()]) {
+      itemPrice = cfg.sizes[itemSize.toLowerCase()].price;
+    }
+  }
+  if (!itemPrice) itemPrice = 450;
+
+  // Uniquely identify item by productId AND size
+  const existingIndex = cart.findIndex(item => 
+    (item.productId === prodId || item._id === product._id) && item.size === itemSize
+  );
 
   if (existingIndex > -1) {
     cart[existingIndex].quantity += quantity;
-    showToast(`${product.name} quantity updated in cart`, 'info');
+    if (typeof showToast === 'function') {
+      showToast(`${prodName} (${itemSize}) quantity updated in cart`, 'info');
+    }
   } else {
     cart.push({
-      _id:      product._id,
-      name:     product.name,
-      price:    product.price,
-      image:    product.images?.[0]?.url || '',
+      _id:         product._id || prodId,
+      productId:   prodId,
+      productName: prodName,
+      name:        prodName,
+      size:        itemSize,
+      price:       itemPrice,
       quantity,
     });
-    showToast(`${product.name} added to cart 🛒`, 'success');
+    if (typeof showToast === 'function') {
+      showToast(`${prodName} (${itemSize}) added to cart 🛒`, 'success');
+    }
   }
 
   saveCart(cart);
 }
 
-function removeFromCart(productId) {
-  const cart = getCart().filter(item => item._id !== productId);
+function removeFromCart(cartIndexOrId, size = null) {
+  let cart = getCart();
+  if (typeof cartIndexOrId === 'number') {
+    cart.splice(cartIndexOrId, 1);
+  } else if (size) {
+    cart = cart.filter(item => !(item._id === cartIndexOrId && item.size === size));
+  } else {
+    cart = cart.filter(item => item._id !== cartIndexOrId && item.productId !== cartIndexOrId);
+  }
   saveCart(cart);
-  showToast('Item removed from cart', 'info');
+  if (typeof showToast === 'function') showToast('Item removed from cart', 'info');
 }
 
-function updateCartQuantity(productId, quantity) {
+function updateCartQuantity(cartIndexOrId, quantity, size = null) {
+  let cart = getCart();
   if (quantity < 1) {
-    removeFromCart(productId);
+    removeFromCart(cartIndexOrId, size);
     return;
   }
-  const cart = getCart().map(item =>
-    item._id === productId ? { ...item, quantity } : item
-  );
+  if (typeof cartIndexOrId === 'number') {
+    if (cart[cartIndexOrId]) cart[cartIndexOrId].quantity = quantity;
+  } else {
+    cart = cart.map(item => {
+      if ((item._id === cartIndexOrId || item.productId === cartIndexOrId) && (!size || item.size === size)) {
+        return { ...item, quantity };
+      }
+      return item;
+    });
+  }
   saveCart(cart);
 }
 
@@ -77,3 +115,4 @@ window.updateCartQuantity  = updateCartQuantity;
 window.clearCart           = clearCart;
 window.getCartTotal        = getCartTotal;
 window.getCartCount        = getCartCount;
+

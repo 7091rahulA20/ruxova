@@ -69,6 +69,7 @@
 </footer>
 
 <script src="assets/js/api.js" defer></script>
+<script src="assets/js/products.config.js" defer></script>
 <script src="assets/js/cart.js" defer></script>
 <script src="assets/js/utils.js" defer></script>
 <script src="assets/js/seo.js" defer></script>
@@ -115,30 +116,33 @@ function renderCartPage() {
 
   const subtotal  = getCartTotal();
   const threshold = cartStoreSettings.freeShippingThreshold;
-  const standardFee = cartStoreSettings.shippingCharge;
-  const shipping  = (threshold > 0 && subtotal >= threshold) || standardFee === 0 ? 0 : standardFee;
+  const stdFee    = cartStoreSettings.shippingCharge;
+  const shipping  = (threshold > 0 && subtotal >= threshold) || stdFee === 0 ? 0 : stdFee;
   const total     = subtotal + shipping;
 
-  items.innerHTML = cart.map(item => `
-    <div class="card cart-item-card" id="cart-item-${item._id}">
-      <img src="${item.image || ''}" alt="${item.name}" class="cart-item-img">
-      <div class="cart-item-details">
-        <h3 class="cart-item-title">${item.name}</h3>
-        <p class="cart-item-price">${formatCurrency(item.price)}</p>
-        <div class="cart-item-controls">
-          <div class="cart-qty-picker">
-            <button onclick="changeQty('${item._id}', ${item.quantity - 1})" class="cart-qty-btn" aria-label="Decrease quantity">−</button>
-            <span class="cart-qty-val">${item.quantity}</span>
-            <button onclick="changeQty('${item._id}', ${item.quantity + 1})" class="cart-qty-btn" aria-label="Increase quantity">+</button>
+  items.innerHTML = cart.map((item, idx) => {
+    const itemImg = window.getProductPrimaryImage ? window.getProductPrimaryImage(item.productId || item._id, item.size) : 'products/ruxova-50ml-1.jpg';
+    return `
+      <div class="card cart-item-card" id="cart-item-${idx}">
+        <img src="${itemImg}" alt="${item.name}" class="cart-item-img">
+        <div class="cart-item-details">
+          <h3 class="cart-item-title">${item.productName || item.name} <span style="font-size:13px;color:var(--gold);">(${item.size || '50ml'})</span></h3>
+          <p class="cart-item-price">${formatCurrency(item.price)}</p>
+          <div class="cart-item-controls">
+            <div class="cart-qty-picker">
+              <button onclick="changeQty(${idx}, ${item.quantity - 1})" class="cart-qty-btn" aria-label="Decrease quantity">−</button>
+              <span class="cart-qty-val">${item.quantity}</span>
+              <button onclick="changeQty(${idx}, ${item.quantity + 1})" class="cart-qty-btn" aria-label="Increase quantity">+</button>
+            </div>
+            <button onclick="removeItem(${idx})" class="cart-remove-btn">🗑 Remove</button>
           </div>
-          <button onclick="removeItem('${item._id}')" class="cart-remove-btn">🗑 Remove</button>
+        </div>
+        <div class="cart-item-subtotal">
+          <p style="font-size:17px;font-weight:700;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
         </div>
       </div>
-      <div class="cart-item-subtotal">
-        <p style="font-size:17px;font-weight:700;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   summary.innerHTML = `
     <div class="card" style="padding:28px;">

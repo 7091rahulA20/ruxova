@@ -110,23 +110,19 @@ async function loadProduct(id, searchQuery = null) {
       if (list.length > 0) {
         product = list[0];
         // Update URL state without page refresh so canonical matches
-        if (history.replaceState) {
-          history.replaceState(null, '', `product.html?id=${product._id}`);
-        }
-      }
-    }
-
-    if (!product) throw new Error('Product not found');
+        if (history.repla    if (!product) throw new Error('Product not found');
     currentProduct = product;
 
-    // Extract product images safely (handles both string URLs and object image format)
-    const fallbackImage = 'assets/images/ruxova-perfumes-logo.png';
-    if (Array.isArray(product.images) && product.images.length > 0) {
-      productImages = product.images.map(img => typeof img === 'string' ? img : (img.url || img.src || fallbackImage));
-    } else if (product.image) {
-      productImages = [typeof product.image === 'string' ? product.image : (product.image.url || product.image.src || fallbackImage)];
+    // Use predictable local images from products.config.js
+    if (typeof window.getProductLocalImages === 'function') {
+      productImages = window.getProductLocalImages(product.productId || product._id || 'ruxova-premium', selectedSize || '50ml');
     } else {
-      productImages = [fallbackImage];
+      productImages = [
+        'products/ruxova-50ml-1.jpg',
+        'products/ruxova-50ml-2.jpg',
+        'products/ruxova-50ml-3.jpg',
+        'products/ruxova-50ml-4.jpg'
+      ];
     }
 
     currentImageIndex = 0;
@@ -135,7 +131,7 @@ async function loadProduct(id, searchQuery = null) {
     renderProduct(product);
 
     // Dynamic SEO Update
-    const firstImgUrl = productImages[0] ? (window.optimizeImageUrl ? window.optimizeImageUrl(productImages[0], 600) : productImages[0]) : '';
+    const firstImgUrl = productImages[0] || 'products/ruxova-50ml-1.jpg';
     const canonicalUrl = `${window.location.origin}/product.html?id=${product._id}`;
     const cleanDesc = (product.description || `Buy ${product.name} luxury perfume online at RUXOVA PERFUMES.`).replace(/<[^>]*>?/gm, '');
 
@@ -251,7 +247,7 @@ function updateDynamicSeo({ title, description, keywords, image, url, product })
 function preloadImages(urls) {
   urls.forEach(url => {
     const img = new Image();
-    img.src = window.optimizeImageUrl ? window.optimizeImageUrl(url, 600) : url;
+    img.src = url;
   });
 }
 
@@ -259,6 +255,17 @@ function preloadImages(urls) {
 
 function renderProduct(p) {
   const wishlistActive = safeIsInWishlist(p._id);
+
+  // Sync size price & local image array from config
+  if (window.getProductConfig) {
+    const cfg = window.getProductConfig(p.productId || p._id);
+    if (cfg && cfg.sizes && cfg.sizes[selectedSize.toLowerCase()]) {
+      const sData = cfg.sizes[selectedSize.toLowerCase()];
+      p.price = sData.price;
+      p.comparePrice = sData.comparePrice;
+    }
+  }
+
   const discountPct = p.comparePrice && p.comparePrice > p.price
     ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
     : null;
@@ -266,16 +273,16 @@ function renderProduct(p) {
   const avgRatingNum = p.avgRating || 0;
   const numReviewsNum = p.numReviews || (p.reviews ? p.reviews.length : 0);
 
-  // Guarantee productImages is populated if empty
-  const fallbackImg = 'assets/images/ruxova-perfumes-logo.png';
-  if (!productImages || productImages.length === 0) {
-    if (Array.isArray(p.images) && p.images.length > 0) {
-      productImages = p.images.map(img => typeof img === 'string' ? img : (img.url || img.src || fallbackImg));
-    } else if (p.image) {
-      productImages = [typeof p.image === 'string' ? p.image : (p.image.url || p.image.src || fallbackImg)];
-    } else {
-      productImages = [fallbackImg];
-    }
+  // Guarantee productImages is populated with local predictable images
+  if (typeof window.getProductLocalImages === 'function') {
+    productImages = window.getProductLocalImages(p.productId || p._id, selectedSize);
+  } else {
+    productImages = [
+      'products/ruxova-50ml-1.jpg',
+      'products/ruxova-50ml-2.jpg',
+      'products/ruxova-50ml-3.jpg',
+      'products/ruxova-50ml-4.jpg'
+    ];
   }
 
   let thumbs = [...productImages];
@@ -285,16 +292,29 @@ function renderProduct(p) {
     : `<span style="color:var(--gold);">${safeFormatCurrency(storeSettings.shippingCharge)}</span>`;
 
   document.getElementById('product-container').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;" class="product-layout fade-up visible">
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:start;" class="product-layout fade-up visible">
 
-      <!-- Gallery Column -->
-      <div>
-        <div id="main-image-box" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--black-card);border:1px solid var(--black-border);aspect-ratio:1;cursor:zoom-in;">
+      <!-- Flipkart-Style Image Gallery Column -->
+      <div class="fk-gallery-wrapper">
+        <!-- Left Vertical Thumbnails (Desktop) / Horizontal Row (Mobile) -->
+        <div class="fk-thumbs-container" id="thumb-row">
+          ${thumbs.map((imgUrl, i) => `
+            <div class="fk-thumb-item ${i === currentImageIndex ? 'active' : ''}" data-index="${i}">
+              <img
+                src="${imgUrl}"
+                alt="${p.name} Thumbnail ${i + 1}"
+                loading="lazy"
+              >
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Large Main Image View with Desktop Hover Zoom Lens -->
+        <div id="main-image-box" class="fk-main-box">
           <img id="main-image"
-            src="${window.optimizeImageUrl ? window.optimizeImageUrl(productImages[0], 600) : productImages[0]}"
+            src="${productImages[currentImageIndex] || productImages[0]}"
             alt="${p.name}"
             loading="eager"
-            style="width:100%;height:100%;object-fit:cover;transition:opacity 0.25s ease;"
           >
           ${discountPct ? `<div style="position:absolute;top:16px;left:16px;background:var(--gold);color:var(--black);padding:6px 14px;border-radius:20px;font-weight:700;font-size:13px;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,0.3);">${discountPct}% OFF</div>` : ''}
           <div style="position:absolute;top:16px;right:16px;z-index:2;">
@@ -305,11 +325,17 @@ function renderProduct(p) {
 
           <!-- Prev / Next Slider Arrows -->
           ${thumbs.length > 1 ? `
-            <button type="button" id="gallery-prev" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">‹</button>
-            <button type="button" id="gallery-next" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:var(--gold);border:1px solid var(--gold);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:3;transition:background 0.2s;">›</button>
+            <button type="button" id="gallery-prev" class="gallery-arrow prev-arrow">‹</button>
+            <button type="button" id="gallery-next" class="gallery-arrow next-arrow">›</button>
           ` : ''}
 
-          <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.75);color:var(--text-primary);padding:6px 12px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px;">
+          <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.8);color:var(--text-primary);padding:6px 14px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px;">
+            <span>🔍 Hover to Zoom</span>
+            <span>•</span>
+            <span>Image <span id="img-index-display">${currentImageIndex + 1}</span> of ${thumbs.length}</span>
+          </div>
+        </div>
+      </div>;padding:6px 12px;border-radius:12px;font-size:11px;border:1px solid var(--black-border);pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px;">
             <span>🔍 Click to Zoom</span>
             <span>•</span>
             <span>Image <span id="img-index-display">1</span> of ${thumbs.length}</span>
@@ -634,13 +660,30 @@ function renderReviewsList(reviews) {
 
 function initGalleryInteractions() {
   const mainBox = document.getElementById('main-image-box');
+  const mainImg = document.getElementById('main-image');
   const prevBtn = document.getElementById('gallery-prev');
   const nextBtn = document.getElementById('gallery-next');
 
-  // Thumbnail clicks
-  document.querySelectorAll('.thumb-img').forEach(img => {
-    img.addEventListener('click', () => {
-      const idx = parseInt(img.dataset.index, 10);
+  // Desktop Mouse Hover Lens Zoom Effect
+  if (mainBox && mainImg) {
+    mainBox.addEventListener('mousemove', (e) => {
+      const rect = mainBox.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      mainImg.style.transformOrigin = `${x}% ${y}%`;
+      mainImg.style.transform = 'scale(2.2)';
+    });
+
+    mainBox.addEventListener('mouseleave', () => {
+      mainImg.style.transformOrigin = 'center center';
+      mainImg.style.transform = 'scale(1)';
+    });
+  }
+
+  // Thumbnail clicks (.fk-thumb-item)
+  document.querySelectorAll('.fk-thumb-item').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      const idx = parseInt(thumb.dataset.index, 10);
       switchGalleryImage(idx);
     });
   });
@@ -656,8 +699,9 @@ function initGalleryInteractions() {
     switchGalleryImage(currentImageIndex + 1);
   });
 
-  // Open Lightbox Zoom
-  mainBox?.addEventListener('click', () => {
+  // Open Lightbox Zoom on double click or click
+  mainBox?.addEventListener('click', (e) => {
+    if (e.target.closest('.gallery-arrow')) return;
     openLightbox(currentImageIndex);
   });
 
@@ -691,20 +735,17 @@ function switchGalleryImage(index) {
   if (mainImg) {
     mainImg.style.opacity = '0.3';
     setTimeout(() => {
-      const rawUrl = productImages[currentImageIndex] || mainImg.src;
-      mainImg.src = window.optimizeImageUrl ? window.optimizeImageUrl(rawUrl, 600) : rawUrl;
+      mainImg.src = productImages[currentImageIndex];
       mainImg.style.opacity = '1';
-    }, 120);
+    }, 90);
   }
 
   // Highlight thumbnail
-  document.querySelectorAll('.thumb-img').forEach((t, i) => {
+  document.querySelectorAll('.fk-thumb-item').forEach((t, i) => {
     if (i === currentImageIndex) {
-      t.style.borderColor = 'var(--gold)';
       t.classList.add('active');
       t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     } else {
-      t.style.borderColor = 'var(--black-border)';
       t.classList.remove('active');
     }
   });
@@ -773,10 +814,9 @@ function switchLightboxImage(index) {
   if (lbImg) {
     lbImg.style.opacity = '0.3';
     setTimeout(() => {
-      const rawUrl = productImages[currentImageIndex];
-      lbImg.src = window.optimizeImageUrl ? window.optimizeImageUrl(rawUrl, 900) : rawUrl;
+      lbImg.src = productImages[currentImageIndex];
       lbImg.style.opacity = '1';
-    }, 100);
+    }, 90);
   }
 
   if (counter) {
@@ -864,21 +904,23 @@ async function loadRelatedProducts(categoryId) {
 
 // ── Size & Quantity Helpers ───────────────────────────────────────
 
-let selectedSize = '100ml';
+let selectedSize = '50ml';
 
 function selectSize(size) {
   selectedSize = size;
-  document.querySelectorAll('.size-opt-btn').forEach(btn => {
-    if (btn.dataset.size === size) {
-      btn.style.borderColor = 'var(--gold)';
-      btn.style.color = 'var(--gold)';
-      btn.style.background = 'rgba(201, 168, 76, 0.15)';
-    } else {
-      btn.style.borderColor = 'var(--black-border)';
-      btn.style.color = 'var(--text-primary)';
-      btn.style.background = 'var(--black-soft)';
+  if (currentProduct) {
+    const cfg = window.getProductConfig ? window.getProductConfig(currentProduct.productId || currentProduct._id) : null;
+    if (cfg && cfg.sizes && cfg.sizes[size.toLowerCase()]) {
+      const sData = cfg.sizes[size.toLowerCase()];
+      currentProduct.price = sData.price;
+      currentProduct.comparePrice = sData.comparePrice;
     }
-  });
+    if (window.getProductLocalImages) {
+      productImages = window.getProductLocalImages(currentProduct.productId || currentProduct._id, size);
+    }
+  }
+  currentImageIndex = 0;
+  renderProduct(currentProduct);
 }
 
 let qty = 1;

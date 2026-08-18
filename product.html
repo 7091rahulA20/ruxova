@@ -43,7 +43,101 @@
       .product-layout { grid-template-columns: 1fr !important; gap: 32px !important; }
       .review-breakdown-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
       .rating-avg-box { border-right: none !important; border-bottom: 1px solid var(--black-border); padding-right: 0 !important; padding-bottom: 20px; }
+      .fk-gallery-wrapper { flex-direction: column-reverse !important; }
+      .fk-thumbs-container { flex-direction: row !important; width: 100% !important; overflow-x: auto !important; max-height: none !important; }
     }
+    
+    /* Flipkart-Style Gallery Layout */
+    .fk-gallery-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .fk-thumbs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 90px;
+      max-height: 520px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding-right: 4px;
+    }
+    .fk-thumbs-container::-webkit-scrollbar { width: 4px; height: 4px; }
+    .fk-thumbs-container::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+
+    .fk-thumb-item {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      border: 2px solid var(--black-border);
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease-in-out;
+      background: var(--black-card);
+    }
+    .fk-thumb-item:hover {
+      border-color: rgba(201, 168, 76, 0.6);
+    }
+    .fk-thumb-item.active {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 12px rgba(201, 168, 76, 0.5);
+      transform: scale(1.02);
+    }
+    .fk-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Main Image Box with Desktop Hover Zoom Lens */
+    .fk-main-box {
+      position: relative;
+      flex: 1;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #050505;
+      border: 1px solid var(--black-border);
+      cursor: crosshair;
+    }
+    .fk-main-box img#main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.2s ease, transform 0.15s ease-out;
+      transform-origin: center center;
+    }
+
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 3;
+      transition: all 0.2s ease;
+    }
+    .gallery-arrow:hover {
+      background: var(--gold);
+      color: #000;
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.6);
+    }
+    .prev-arrow { left: 14px; }
+    .next-arrow { right: 14px; }
+
     /* Lightbox Modal */
     .lightbox-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
@@ -141,13 +235,12 @@
     <a href="https://wa.me/917808763348" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-icon-link">
       <i class="fa-brands fa-whatsapp"></i>
     </a>
-      <i class="fa-brands fa-x-twitter"></i>
-    </a>
   </div>
   <p style="color:var(--text-muted);font-size:13px;">© 2025 RUXOVA PERFUMES. All rights reserved. Developed by RSAGENCY</p>
 </footer>
 
 <script src="assets/js/api.js" defer></script>
+<script src="assets/js/products.config.js" defer></script>
 <script src="assets/js/cart.js" defer></script>
 <script src="assets/js/utils.js" defer></script>
 <script src="assets/js/seo.js" defer></script>

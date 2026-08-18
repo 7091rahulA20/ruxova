@@ -34,7 +34,7 @@ function readUrlParams() {
   }
 }
 
-// ── Load Products ─────────────────────────────────────────────────
+// ── Load Products ────────────────────────────────────────
 
 async function loadProducts() {
   const grid    = document.getElementById('products-grid');

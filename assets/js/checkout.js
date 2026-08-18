@@ -101,16 +101,19 @@ function renderOrderSummary() {
 
   container.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-      ${cart.map(item => `
-        <div style="display:flex;gap:12px;align-items:center;">
-          <img src="${item.image || ''}" alt="${item.name}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
-          <div style="flex:1;">
-            <p style="font-size:14px;font-weight:500;">${item.name}</p>
-            <p style="font-size:13px;color:var(--text-muted);">Qty: ${item.quantity}</p>
+      ${cart.map(item => {
+        const itemImg = window.getProductPrimaryImage ? window.getProductPrimaryImage(item.productId || item._id, item.size) : 'products/ruxova-50ml-1.jpg';
+        return `
+          <div style="display:flex;gap:12px;align-items:center;">
+            <img src="${itemImg}" alt="${item.name}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--black-border);">
+            <div style="flex:1;">
+              <p style="font-size:14px;font-weight:500;">${item.productName || item.name} <span style="font-size:12px;color:var(--gold);">(${item.size || '50ml'})</span></p>
+              <p style="font-size:13px;color:var(--text-muted);">Qty: ${item.quantity} × ₹${item.price}</p>
+            </div>
+            <p style="font-weight:600;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
           </div>
-          <p style="font-weight:600;color:var(--gold);">${formatCurrency(item.price * item.quantity)}</p>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
     <div class="gold-divider" style="margin:16px 0;"></div>
     <div style="display:flex;flex-direction:column;gap:8px;">
@@ -399,8 +402,24 @@ function initCheckoutForm() {
       const couponCodeInput = document.getElementById('coupon-input')?.value?.trim()?.toUpperCase() || '';
       const activeRefCode   = appliedCoupon?.code || getStoredRefCode() || couponCodeInput;
 
+      // Clean item payload according to Requirement 4 & 5 (no image binary/URLs)
+      const orderItems = cart.map(i => ({
+        product: (i._id && i._id.length === 24) ? i._id : undefined,
+        productId: i.productId || i._id || 'ruxova-premium',
+        productName: i.productName || i.name || 'RUXOVA Premium Eau De Parfum',
+        name: i.productName || i.name || 'RUXOVA Premium Eau De Parfum',
+        size: i.size || '50ml',
+        quantity: Number(i.quantity) || 1,
+        price: Number(i.price) || 450
+      }));
+
       const formData = new FormData();
-      formData.append('items',           JSON.stringify(cart.map(i => ({ product: i._id, name: i.name, quantity: i.quantity, price: i.price }))));
+      formData.append('items',           JSON.stringify(orderItems));
+      formData.append('shippingAddress', JSON.stringify(shippingAddress));
+      formData.append('paymentMethod',   paymentMethod);
+      formData.append('totalAmount',     window._checkoutTotal);
+      formData.append('shippingCharge',  window._checkoutShipping);
+      formData.append('discount',        window._checkoutDiscount || 0);
       formData.append('shippingAddress', JSON.stringify(shippingAddress));
       formData.append('paymentMethod',   paymentMethod);
       formData.append('totalAmount',     window._checkoutTotal);
