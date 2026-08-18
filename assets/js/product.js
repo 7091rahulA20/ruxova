@@ -391,42 +391,37 @@ function renderProduct(p) {
 
         <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:24px;font-size:15px;">${p.description}</p>
 
-        <!-- Volume Selection -->
+        <!-- Volume Selection (Driven by Backend Database) -->
         <div style="margin-bottom:24px;">
-          <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Volume / Size:</label>
+          <label style="font-size:13px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">Select Available Size / ML:</label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;" id="size-picker">
             ${(() => {
-              const configuredVolumeStr = (p.volume || '100ml').trim();
-              const configuredVolumes = configuredVolumeStr.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-              const displaySizes = Array.from(new Set([...configuredVolumes, '25ml', '50ml', '100ml', '200ml']));
-              if (!selectedSize || !configuredVolumes.some(v => v.toLowerCase() === selectedSize.toLowerCase())) {
-                selectedSize = configuredVolumes[0] || '100ml';
-              }
-              return displaySizes.map(s => {
-                const isAvailable = configuredVolumes.some(v => v.toLowerCase() === s.toLowerCase());
-                const isSelected = selectedSize.toLowerCase() === s.toLowerCase();
-                if (isAvailable) {
-                  return `
-                    <button
-                      type="button"
-                      class="size-opt-btn"
-                      data-size="${s}"
-                      onclick="selectSize('${s}')"
-                      style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
-                    >
-                      ${s}
-                    </button>`;
-                } else {
-                  return `
-                    <button
-                      type="button"
-                      disabled
-                      style="padding:10px 14px;border-radius:8px;border:1px solid var(--black-border);background:rgba(255,255,255,0.02);color:var(--text-muted);font-weight:500;font-size:12px;cursor:not-allowed;opacity:0.45;"
-                      title="${s} is not available for this perfume"
-                    >
-                      ${s} <span style="font-size:10px;margin-left:2px;">(N/A)</span>
-                    </button>`;
-                }
+              const sizesList = (p.sizes && p.sizes.length > 0)
+                ? p.sizes
+                : [
+                    { size: '10ml', price: 70 },
+                    { size: '25ml', price: 250 },
+                    { size: '50ml', price: p.price || 450 },
+                    { size: '100ml', price: 799 },
+                    { size: '200ml', price: 1499 }
+                  ];
+
+              if (!selectedSize) selectedSize = sizesList[0]?.size || '50ml';
+
+              return sizesList.map(item => {
+                const sName = item.size;
+                const sPrice = item.price;
+                const isSelected = selectedSize.toLowerCase() === sName.toLowerCase();
+                return `
+                  <button
+                    type="button"
+                    class="size-opt-btn"
+                    data-size="${sName}"
+                    onclick="selectSize('${sName}')"
+                    style="padding:10px 18px;border-radius:8px;border:1px solid ${isSelected ? 'var(--gold)' : 'var(--black-border)'};background:${isSelected ? 'rgba(201,168,76,0.15)' : 'var(--black-soft)'};color:${isSelected ? 'var(--gold)' : 'var(--text-primary)'};font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;"
+                  >
+                    ${sName} — ₹${sPrice}
+                  </button>`;
               }).join('');
             })()}
           </div>

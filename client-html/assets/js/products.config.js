@@ -1,57 +1,79 @@
 /* ================================================================
-   RUXOVA PERFUMES — Centralized Product & Variant Image Configuration
-   Manages local static images and pricing per size/variant.
-   No backend API image calls required.
+   RUXOVA PERFUMES — Local Product Gallery Image Configuration
+   Product metadata (Title, Description, Size Variants, Prices, Stock)
+   is dynamically fetched from the MongoDB Backend API.
+   This file ONLY maps local 5-image static assets.
    ================================================================ */
 
-window.RUXOVA_PRODUCTS_CONFIG = {
-  'ruxova-premium': {
-    id: 'ruxova-premium',
-    name: 'RUXOVA Premium Eau De Parfum',
-    description: 'An opulent luxury fragrance combining royal oud, French rose, bergamot, and warm golden amber for an irresistible, long-lasting aura.',
-    defaultSize: '50ml',
-    sizes: {
-      '10ml':  { price: 70,   comparePrice: 99,   images: ['/products/ruxova-10ml-1.jpg',  '/products/ruxova-10ml-2.jpg',  '/products/ruxova-10ml-3.jpg',  '/products/ruxova-10ml-4.jpg'] },
-      '25ml':  { price: 250,  comparePrice: 349,  images: ['/products/ruxova-25ml-1.jpg',  '/products/ruxova-25ml-2.jpg',  '/products/ruxova-25ml-3.jpg',  '/products/ruxova-25ml-4.jpg'] },
-      '50ml':  { price: 450,  comparePrice: 599,  images: ['/products/ruxova-50ml-1.jpg',  '/products/ruxova-50ml-2.jpg',  '/products/ruxova-50ml-3.jpg',  '/products/ruxova-50ml-4.jpg'] },
-      '100ml': { price: 799,  comparePrice: 1199, images: ['/products/ruxova-100ml-1.jpg', '/products/ruxova-100ml-2.jpg', '/products/ruxova-100ml-3.jpg', '/products/ruxova-100ml-4.jpg'] },
-      '200ml': { price: 1499, comparePrice: 1999, images: ['/products/ruxova-200ml-1.jpg', '/products/ruxova-200ml-2.jpg', '/products/ruxova-200ml-3.jpg', '/products/ruxova-200ml-4.jpg'] }
-    }
-  }
+window.PRODUCT_IMAGES = {
+  'ruxova-premium': [
+    '/products/ruxova-premium-1.jpg',
+    '/products/ruxova-premium-2.jpg',
+    '/products/ruxova-premium-3.jpg',
+    '/products/ruxova-premium-4.jpg',
+    '/products/ruxova-premium-5.jpg'
+  ],
+  '10ml': [
+    '/products/ruxova-10ml-1.jpg',
+    '/products/ruxova-10ml-2.jpg',
+    '/products/ruxova-10ml-3.jpg',
+    '/products/ruxova-10ml-4.jpg',
+    '/products/ruxova-10ml-5.jpg'
+  ],
+  '25ml': [
+    '/products/ruxova-25ml-1.jpg',
+    '/products/ruxova-25ml-2.jpg',
+    '/products/ruxova-25ml-3.jpg',
+    '/products/ruxova-25ml-4.jpg',
+    '/products/ruxova-25ml-5.jpg'
+  ],
+  '50ml': [
+    '/products/ruxova-50ml-1.jpg',
+    '/products/ruxova-50ml-2.jpg',
+    '/products/ruxova-50ml-3.jpg',
+    '/products/ruxova-50ml-4.jpg',
+    '/products/ruxova-50ml-5.jpg'
+  ],
+  '100ml': [
+    '/products/ruxova-100ml-1.jpg',
+    '/products/ruxova-100ml-2.jpg',
+    '/products/ruxova-100ml-3.jpg',
+    '/products/ruxova-100ml-4.jpg',
+    '/products/ruxova-100ml-5.jpg'
+  ],
+  '200ml': [
+    '/products/ruxova-200ml-1.jpg',
+    '/products/ruxova-200ml-2.jpg',
+    '/products/ruxova-200ml-3.jpg',
+    '/products/ruxova-200ml-4.jpg',
+    '/products/ruxova-200ml-5.jpg'
+  ]
 };
 
 /**
- * Get product configuration object by productId or fallback to ruxova-premium
- */
-window.getProductConfig = function(productId) {
-  if (productId && window.RUXOVA_PRODUCTS_CONFIG[productId]) {
-    return window.RUXOVA_PRODUCTS_CONFIG[productId];
-  }
-  return window.RUXOVA_PRODUCTS_CONFIG['ruxova-premium'];
-};
-
-/**
- * Get predictable local product image array for a given size/ML
+ * Helper to get 5-image local product array for Flipkart gallery
  */
 window.getProductLocalImages = function(productId, size = '50ml') {
-  const normSize = (size || '50ml').toString().toLowerCase().trim();
-  const config = window.getProductConfig(productId);
-  if (config && config.sizes && config.sizes[normSize]) {
-    return config.sizes[normSize].images;
-  }
-  const cleanSize = normSize.includes('ml') ? normSize : `${normSize}ml`;
-  return [
-    `/products/ruxova-${cleanSize}-1.jpg`,
-    `/products/ruxova-${cleanSize}-2.jpg`,
-    `/products/ruxova-${cleanSize}-3.jpg`,
-    `/products/ruxova-${cleanSize}-4.jpg`
-  ];
+  const cleanId = (productId || 'ruxova-premium').toString().toLowerCase().trim();
+  const cleanSize = (size || '50ml').toString().toLowerCase().trim();
+
+  if (window.PRODUCT_IMAGES[cleanId]) return window.PRODUCT_IMAGES[cleanId];
+  if (window.PRODUCT_IMAGES[cleanSize]) return window.PRODUCT_IMAGES[cleanSize];
+  return window.PRODUCT_IMAGES['ruxova-premium'];
 };
 
 /**
- * Get primary single image URL for thumbnails in Shop / Cart / Orders
+ * Helper to get primary thumbnail image for product cards and cart
  */
 window.getProductPrimaryImage = function(productId, size = '50ml') {
   const imgs = window.getProductLocalImages(productId, size);
   return imgs && imgs.length > 0 ? imgs[0] : '/products/ruxova-50ml-1.jpg';
+};
+
+// Legacy compatibility wrapper
+window.getProductConfig = function(productId) {
+  return {
+    id: productId || 'ruxova-premium',
+    images: window.getProductLocalImages(productId)
+  };
 };
