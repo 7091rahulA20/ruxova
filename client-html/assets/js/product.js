@@ -109,8 +109,13 @@ async function loadProduct(id, searchQuery = null) {
       const list = res.products || [];
       if (list.length > 0) {
         product = list[0];
-        // Update URL state without page refresh so canonical matches
-        if (history.repla    if (!product) throw new Error('Product not found');
+        if (history.replaceState) {
+          history.replaceState(null, '', `product.html?id=${product._id}`);
+        }
+      }
+    }
+
+    if (!product) throw new Error('Product not found');
     currentProduct = product;
 
     // Use predictable local images from products.config.js

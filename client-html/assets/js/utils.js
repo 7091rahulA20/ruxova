@@ -213,7 +213,7 @@ function renderProductCard(p) {
             type="button"
             class="btn btn-outline-gold btn-view-prod"
             style="padding:10px 14px;"
-            onclick="event.stopPropagation(); handleQuickBuy('${p._id}', '${p.volume || '50ml'}')"
+            onclick="event.stopPropagation(); window.location.href='product.html?id=' + (encodeURIComponent(p.productId || p._id));"
           >
             ⚡ Order Now
           </button>
