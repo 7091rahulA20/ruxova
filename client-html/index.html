@@ -43,12 +43,12 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    /* Hero Image Sizing & Desktop Alignment */
+    /* Hero Image Widescreen 16:9 Desktop Sizing */
     .hero {
-      background-color: #0d0d0d;
+      background-color: #111417;
       background-image: url('assets/images/ruxova-luxury-perfumes-hero.jpeg');
       background-size: cover;
-      background-position: center 20%;
+      background-position: right center;
       min-height: 90vh;
       display: flex;
       align-items: center;
@@ -58,32 +58,27 @@
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(13,13,13,0.85) 0%, rgba(13,13,13,0.45) 50%, rgba(13,13,13,0.1) 100%);
+      background: linear-gradient(to right, rgba(17,20,23,0.92) 0%, rgba(17,20,23,0.55) 45%, rgba(17,20,23,0.05) 90%);
       pointer-events: none;
     }
 
     @media (min-width: 992px) {
       .hero {
-        background-size: contain !important;
-        background-repeat: no-repeat !important;
+        background-size: cover !important;
         background-position: right center !important;
-        background-color: #080808;
-        min-height: 88vh;
-      }
-      .hero-overlay {
-        background: linear-gradient(to right, #080808 0%, rgba(8,8,8,0.8) 40%, rgba(8,8,8,0) 80%) !important;
+        min-height: 90vh;
       }
     }
 
     @media (max-width: 768px) {
       .hero {
         background-size: cover !important;
-        background-position: center 15% !important;
-        filter: brightness(1.2) contrast(1.05) !important;
+        background-position: 75% center !important;
+        filter: brightness(1.15) contrast(1.03) !important;
         min-height: 85vh;
       }
       .hero-overlay {
-        background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.75) 100%) !important;
+        background: linear-gradient(180deg, rgba(17,20,23,0.4) 0%, rgba(17,20,23,0.1) 45%, rgba(17,20,23,0.85) 100%) !important;
       }
     }
   </style>
