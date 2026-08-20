@@ -79,6 +79,28 @@ if (fs.existsSync(productHtmlFile)) {
   console.log(`✅ SSG PRE-RENDERED ${productSlugs.length} static product pages in dist/products/`);
 }
 
+// Clean route folders (e.g. /return-policy -> /return-policy/index.html)
+const pageRoutes = [
+  'shipping-policy',
+  'return-policy',
+  'privacy-policy',
+  'terms',
+  'contact',
+  'shop',
+  'cart',
+  'checkout'
+];
+
+pageRoutes.forEach(route => {
+  const htmlFile = path.join(srcDir, `${route}.html`);
+  const folderInDist = path.join(distDir, route);
+  if (fs.existsSync(htmlFile)) {
+    fs.mkdirSync(folderInDist, { recursive: true });
+    fs.copyFileSync(htmlFile, path.join(folderInDist, 'index.html'));
+  }
+});
+console.log(`✅ Generated clean URL routes for ${pageRoutes.length} pages (${pageRoutes.join(', ')})`);
+
 // 3. Also populate ./client-html folder for Vercel if Vercel Root Directory is set to "client-html"
 if (fs.existsSync(clientHtmlDir)) {
   fs.rmSync(clientHtmlDir, { recursive: true, force: true });

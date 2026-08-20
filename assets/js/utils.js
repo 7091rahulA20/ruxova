@@ -45,9 +45,20 @@ function showPageLoader() {
 function hidePageLoader() {
   const loader = document.getElementById('page-loader');
   if (loader) {
-    setTimeout(() => loader.classList.add('hidden'), 400);
+    loader.classList.add('hidden');
+    setTimeout(() => { loader.style.display = 'none'; }, 450);
   }
 }
+
+// Auto-hide page loader on DOM ready & safety fallback (max 500ms)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(hidePageLoader, 150);
+  });
+} else {
+  setTimeout(hidePageLoader, 150);
+}
+setTimeout(hidePageLoader, 500);
 
 // ── Button Loading State ─────────────────────────────────────────
 
