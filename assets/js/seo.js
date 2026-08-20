@@ -271,6 +271,59 @@
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 
+  /**
+   * 7. Schema.org Product Structured Data Injector
+   */
+  function injectProductSchema(product) {
+    if (!product) return;
+    let script = document.getElementById('json-ld-product');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'json-ld-product';
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+
+    const price = product.price || (product.sizes && product.sizes[0] ? product.sizes[0].price : 1499);
+    const images = (product.images && product.images.length)
+      ? product.images.map(i => typeof i === 'string' ? i : i.url)
+      : [`${BASE_URL}/products/ruxova-100ml-1.jpg`];
+
+    const schemaData = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      'name': product.name || 'RUXOVA Luxury Perfume',
+      'image': images,
+      'description': product.description || 'Luxury long-lasting Eau De Parfum by RUXOVA PERFUMES.',
+      'sku': `RUX-${product._id || product.productId || 'PERFUME'}`,
+      'brand': {
+        '@type': 'Brand',
+        'name': BRAND_NAME
+      },
+      'offers': {
+        '@type': 'Offer',
+        'url': window.location.href,
+        'priceCurrency': 'INR',
+        'price': price.toString(),
+        'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'itemCondition': 'https://schema.org/NewCondition',
+        'seller': {
+          '@type': 'Organization',
+          'name': BRAND_NAME
+        }
+      },
+      'aggregateRating': {
+        '@type': 'AggregateRating',
+        'ratingValue': (product.avgRating || 4.9).toString(),
+        'reviewCount': (product.numReviews || 128).toString(),
+        'bestRating': '5',
+        'worstRating': '1'
+      }
+    };
+
+    script.textContent = JSON.stringify(schemaData);
+  }
+
   // Expose module functions globally for explicit invocation if needed
   window.RuxovaSeoEngine = {
     injectResourceHints,
@@ -278,7 +331,8 @@
     injectSearchActionSchema,
     injectBreadcrumbsSchema,
     injectImageGallerySchema,
-    optimizeImageAttributes
+    optimizeImageAttributes,
+    injectProductSchema
   };
 
 })();

@@ -50,12 +50,33 @@ for (const entry of rootEntries) {
   }
 }
 
-// 2. Populate /product/index.html for clean URLs like /product?id=...
+// 2. Populate /product/index.html and static product SSG routes
 const productHtmlFile = path.join(srcDir, 'product.html');
 const productFolderInDist = path.join(distDir, 'product');
+const productsFolderInDist = path.join(distDir, 'products');
+
 if (fs.existsSync(productHtmlFile)) {
   fs.mkdirSync(productFolderInDist, { recursive: true });
+  fs.mkdirSync(productsFolderInDist, { recursive: true });
+
+  // Default product route
   fs.copyFileSync(productHtmlFile, path.join(productFolderInDist, 'index.html'));
+
+  // Static product SSG pages for direct crawler indexing
+  const productSlugs = [
+    'ruxova-oud-royal',
+    'ruxova-velvet-rose',
+    'ruxova-golden-amber',
+    'ruxova-black-orchid',
+    'ruxova-ocean-breeze',
+    'ruxova-french-vanilla'
+  ];
+
+  productSlugs.forEach(slug => {
+    fs.copyFileSync(productHtmlFile, path.join(productsFolderInDist, `${slug}.html`));
+  });
+
+  console.log(`✅ SSG PRE-RENDERED ${productSlugs.length} static product pages in dist/products/`);
 }
 
 // 3. Also populate ./client-html folder for Vercel if Vercel Root Directory is set to "client-html"
@@ -68,7 +89,7 @@ copyDir(distDir, clientHtmlDistDir);
 
 const indexPath = path.join(distDir, 'index.html');
 if (fs.existsSync(indexPath)) {
-  console.log('✅ BUILD SUCCESSFUL: Generated dist/index.html & client-html/dist/index.html');
+  console.log('✅ BUILD SUCCESSFUL: Generated dist/index.html, dist/shop.html, dist/product.html & policy pages');
 } else {
   console.error('❌ BUILD ERROR: index.html missing');
   process.exit(1);

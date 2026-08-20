@@ -147,6 +147,13 @@ function updateCartBadge() {
   });
 }
 
+// Auto-run badge update on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateCartBadge);
+} else {
+  updateCartBadge();
+}
+
 // ── Wishlist Set ─────────────────────────────────────────────────
 
 function getWishlistIds() {
