@@ -228,10 +228,18 @@
           'contentUrl': img.url,
           'url': img.url,
           'caption': img.caption,
+          'encodingFormat': img.url.endsWith('.jpeg') || img.url.endsWith('.jpg') ? 'image/jpeg' : 'image/png',
+          'width': '1200',
+          'height': '1200',
           'creditText': 'RUXOVA PERFUMES',
+          'copyrightNotice': '© 2025 RUXOVA PERFUMES. All rights reserved.',
+          'license': `${BASE_URL}/terms.html`,
+          'acquireLicensePage': `${BASE_URL}/shop.html`,
           'creator': {
             '@type': 'Organization',
-            'name': BRAND_NAME
+            'name': BRAND_NAME,
+            'url': BASE_URL,
+            'logo': `${BASE_URL}/assets/images/ruxova-luxury-perfume-brand-logo.png`
           }
         }
       }))
