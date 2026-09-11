@@ -58,23 +58,11 @@
       '@context': 'https://schema.org',
       '@type': 'Organization',
       'name': BRAND_NAME,
-      'legalName': 'RUXOVA PERFUMES India',
-      'url': BASE_URL,
-      'logo': `${BASE_URL}/assets/images/ruxova-luxury-perfume-brand-logo.png`,
-      'image': `${BASE_URL}/assets/images/ruxova-perfumes-logo.png`,
-      'description': 'RUXOVA PERFUMES — Scent That Defines You. Premier luxury fragrance house in India specializing in long-lasting Eau De Parfum for men and women.',
-      'contactPoint': {
-        '@type': 'ContactPoint',
-        'telephone': '+91-7808763348',
-        'contactType': 'customer service',
-        'email': 'ruxova47@gmail.com',
-        'areaServed': 'IN',
-        'availableLanguage': ['English', 'Hindi']
-      },
+      'alternateName': 'RUXOVA',
+      'url': 'https://ruxova.vercel.app/',
+      'logo': 'https://ruxova.vercel.app/assets/images/ruxova-luxury-perfume-brand-logo.png',
       'sameAs': [
-        'https://www.instagram.com/ruxov.a?igsh=MWF5YnUyaGtwZWUycg==',
-        'https://facebook.com',
-        'https://x.com'
+        'https://www.instagram.com/ruxov.a'
       ]
     };
 
@@ -86,7 +74,7 @@
   }
 
   /**
-   * 3. WebSite & SearchAction JSON-LD Schema
+   * 3. WebSite JSON-LD Schema
    */
   function injectSearchActionSchema() {
     if (document.getElementById('json-ld-website')) return;
@@ -94,14 +82,9 @@
     const schemaData = {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': BRAND_NAME,
-      'alternateName': 'RUXOVA Luxury Fragrances',
-      'url': BASE_URL,
-      'potentialAction': {
-        '@type': 'SearchAction',
-        'target': `${BASE_URL}/shop.html?search={search_term_string}`,
-        'query-input': 'required name=search_term_string'
-      }
+      'name': 'RUXOVA',
+      'alternateName': 'RUXOVA PERFUMES',
+      'url': 'https://ruxova.vercel.app/'
     };
 
     const script = document.createElement('script');
@@ -123,7 +106,7 @@
         '@type': 'ListItem',
         'position': 1,
         'name': 'Home',
-        'item': `${BASE_URL}/index.html`
+        'item': `${BASE_URL}/`
       }
     ];
 
